@@ -40,6 +40,20 @@ function stopLoading() {
     bar2.style.width = '0%';
 }
 
+const videoWrapEl = document.getElementById('video-wrap');
+const videoOverlayEl = document.getElementById('video-overlay');
+const resultVideoEl = document.getElementById('result-video');
+
+videoOverlayEl.addEventListener('click', () => {
+    resultVideoEl.play();
+    videoOverlayEl.style.display = 'none';
+});
+
+resultVideoEl.addEventListener('ended', () => {
+    videoOverlayEl.textContent = '↺';
+    videoOverlayEl.style.display = 'flex';
+});
+
 const fileInput = document.getElementById('file-input');
 const analyzeBtn = document.getElementById('analyze-btn');
 const resultCard = document.getElementById('result-card');
@@ -103,13 +117,16 @@ analyzeBtn.addEventListener('click', async () => {
         };
         const titleLower = data.title.toLowerCase();
         const videoSrc = Object.entries(VIDEO_MAP).find(([key]) => titleLower.includes(key))?.[1];
+        const videoWrap = document.getElementById('video-wrap');
+        const videoOverlay = document.getElementById('video-overlay');
         if (videoSrc) {
             resultVideo.src = videoSrc;
-            resultVideo.style.display = 'block';
             resultVideo.load();
-            resultVideo.play();
+            videoWrap.style.display = 'block';
+            videoOverlay.style.display = 'flex';
+            videoOverlay.textContent = '▶';
         } else {
-            resultVideo.style.display = 'none';
+            videoWrap.style.display = 'none';
         }
 
         const certDownload = document.getElementById('cert-download');

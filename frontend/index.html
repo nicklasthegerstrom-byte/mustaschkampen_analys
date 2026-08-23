@@ -40,7 +40,10 @@
         </div>
 
         <div class="card" id="result-card" hidden>
-            <video id="result-video" autoplay muted playsinline></video>
+            <div class="video-wrap" id="video-wrap" style="display:none;">
+                <video id="result-video" playsinline></video>
+                <div class="video-overlay" id="video-overlay">▶</div>
+            </div>
             <p id="result-title" class="result-title"></p>
             <p id="result-styrka" class="result-styrka"></p>
             <p id="result-desc" class="result-desc"></p>
