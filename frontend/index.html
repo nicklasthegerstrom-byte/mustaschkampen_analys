@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mustaschkraft — Mustaschkampen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <img src="/assets/logo1.png" alt="Mustaschkampen" class="logo">
+
+        <div class="card" id="upload-card">
+            <div class="upload-row">
+                <label for="file-input" class="file-label">
+                    Välj bild
+                    <input type="file" id="file-input" accept="image/*">
+                </label>
+                <span id="file-name" class="file-name">Ingen fil vald</span>
+                <button class="info-btn" id="info-btn">i</button>
+            </div>
+            <div class="info-popup" id="info-popup" hidden>
+                <strong>Tips för bästa resultat</strong><br>
+                Ta bilden rakt framifrån<br>
+                Håll munnen stängd<br>
+                Se till att ha bra belysning<br>
+                Se till att mustaschen syns tydligt<br>
+                Undvik motion blur eller oskärpa
+            </div>
+            <img id="preview" style="display:none; width:100%; border-radius:8px; margin-top:12px; object-fit:contain; max-height:300px;">
+            <button id="analyze-btn" class="btn" hidden>Starta analys</button>
+        </div>
+
+        <div class="card" id="loading-card" hidden>
+            <p id="loading-label" class="loading-label">Skannar överläppsregionen...</p>
+            <div class="progress-track"><div class="progress-bar" id="bar1"></div></div>
+            <div class="progress-track"><div class="progress-bar" id="bar2"></div></div>
+        </div>
+
+        <div class="card" id="result-card" hidden>
+            <video id="result-video" autoplay muted playsinline></video>
+            <p id="result-title" class="result-title"></p>
+            <p id="result-styrka" class="result-styrka"></p>
+            <p id="result-desc" class="result-desc"></p>
+            <div class="cert-wrap">
+                <img id="result-cert">
+            </div>
+            <a id="cert-download" class="btn cert-btn" href="#" download="mustaschkraft.png" hidden>Ladda ner certifikat</a>
+            <p id="cert-mobile-hint" class="cert-hint" hidden>Håll fingret på certifikatet och välj "Spara bild".</p>
+        </div>
+
+        <p class="swisha">
+            Swisha ditt bidrag till <strong>900 10 17</strong>.<br>
+            Alla gåvor är välkomna, varje krona gör skillnad i kampen mot Sveriges vanligaste cancersjukdom.
+        </p>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
