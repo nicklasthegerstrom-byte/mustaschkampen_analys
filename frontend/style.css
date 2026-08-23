@@ -57,7 +57,7 @@ main {
 
 .card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 0px;
     padding: 24px;
     width: 100%;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -117,11 +117,28 @@ main {
 .info-popup {
     margin-top: 12px;
     background: #f0f4ff;
-    border-radius: 8px;
+    border-radius: 0px;
     padding: 12px 14px;
+    font-family: 'Gotham Medium', sans-serif;
     font-size: 0.8rem;
     line-height: 1.7;
     color: #333;
+}
+
+.info-popup strong {
+    font-family: 'Gotham Bold', sans-serif;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.info-popup ul {
+    padding-left: 1.2em;
+    margin: 0;
+}
+
+.info-popup ul li {
+    margin-bottom: 2px;
 }
 
 .btn[hidden] { display: none; }
@@ -184,15 +201,15 @@ main {
 }
 
 .result-styrka {
-    font-family: Montserrat, sans-serif;
-    font-weight: 700;
-    font-size: 1.2rem;
+    font-family: 'Gotham Bold', sans-serif;
+    font-size: 1.4rem;
     color: #444;
     text-align: center;
     margin-bottom: 6px;
 }
 
 .result-desc {
+    font-family: 'Gotham Medium', sans-serif;
     font-size: 13px;
     color: #444;
     text-align: center;

@@ -2,6 +2,7 @@ import asyncio
 import base64
 import io
 import os
+import numpy as np
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles

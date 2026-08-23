@@ -134,6 +134,9 @@ analyzeBtn.addEventListener('click', async () => {
             certMobileHint.hidden = true;
         }
 
+        preview.style.display = 'none';
+        fileName.textContent = 'Ingen fil vald';
+
         resultCard.hidden = false;
         resultCard.scrollIntoView({ behavior: 'smooth' });
 
