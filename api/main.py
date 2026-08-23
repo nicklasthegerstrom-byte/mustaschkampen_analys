@@ -9,7 +9,7 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pillow_heif import register_heif_opener
 
 from api.models import predict
-from api.scoring import weighted_epic_score, compress_top_end, classify_epicness
+from api.scoring import weighted_epic_score, classify_epicness
 from api import logger
 
 register_heif_opener()

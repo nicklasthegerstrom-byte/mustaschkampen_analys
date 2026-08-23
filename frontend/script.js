@@ -93,7 +93,24 @@ analyzeBtn.addEventListener('click', async () => {
         resultStyrka.textContent = data.mustache ? `Mustaschstyrka: ${data.score} / 100` : '';
         resultDesc.textContent = data.description || '';
 
-        resultVideo.style.display = 'none';
+        const VIDEO_MAP = {
+            'legendarisk': '/assets/abbe/video/legendarisk.mp4',
+            'episk':       '/assets/abbe/video/episk.mp4',
+            'respektabel': '/assets/abbe/video/respektabel.mp4',
+            'lovande':     '/assets/abbe/video/lovande.mp4',
+            'fjunig':      '/assets/abbe/video/fjunig.mp4',
+            'ingen':       '/assets/abbe/video/ingen.mp4',
+        };
+        const titleLower = data.title.toLowerCase();
+        const videoSrc = Object.entries(VIDEO_MAP).find(([key]) => titleLower.includes(key))?.[1];
+        if (videoSrc) {
+            resultVideo.src = videoSrc;
+            resultVideo.style.display = 'block';
+            resultVideo.load();
+            resultVideo.play();
+        } else {
+            resultVideo.style.display = 'none';
+        }
 
         const certDownload = document.getElementById('cert-download');
         const certMobileHint = document.getElementById('cert-mobile-hint');
