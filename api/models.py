@@ -16,21 +16,32 @@ def prepare_image(image: Image.Image):
     max_dim = 1200
     if max(image.size) > max_dim:
         image.thumbnail((max_dim, max_dim), Image.LANCZOS)
-    face = mtcnn(image)
-    if face is None:
-        return None
-    arr = face.permute(1, 2, 0).numpy().astype(np.uint8)
-    return np.expand_dims(arr, axis=0)
+
+    boxes, _ = mtcnn.detect(image)
+    if boxes is None:
+        return None, None, None
+
+    x1, y1, x2, y2 = boxes[0]
+    iw, ih = image.size
+    margin = 40
+    x1c = max(0, x1 - margin)
+    y1c = max(0, y1 - margin)
+    x2c = min(iw, x2 + margin)
+    y2c = min(ih, y2 + margin)
+    face_crop = image.crop((x1c, y1c, x2c, y2c)).resize((178, 178), Image.LANCZOS)
+    arr = np.expand_dims(np.array(face_crop, dtype=np.uint8), axis=0)
+
+    return arr, boxes[0], image  # image är redan resizad
 
 
 def predict(image: Image.Image):
-    img_array = prepare_image(image)
+    img_array, face_box, resized_image = prepare_image(image)
     if img_array is None:
         return None
 
     mustache_prob = float(mustache_model.predict(img_array, verbose=0)[0][0])
     if mustache_prob < 0.4:
-        return {"mustache": False, "mustache_prob": mustache_prob}
+        return {"mustache": False, "mustache_prob": mustache_prob, "face_box": face_box.tolist(), "resized_image": resized_image}
 
     preds = epic_model.predict(img_array, verbose=0)[0]
     p_epic, p_medium, p_medium_thin, p_thin = float(preds[0]), float(preds[1]), float(preds[2]), float(preds[3])
@@ -42,4 +53,6 @@ def predict(image: Image.Image):
         "p_medium": p_medium,
         "p_medium_thin": p_medium_thin,
         "p_thin": p_thin,
+        "face_box": face_box.tolist(),
+        "resized_image": resized_image,
     }
