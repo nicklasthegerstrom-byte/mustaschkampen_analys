@@ -27,20 +27,19 @@
 }
 
 .back-link {
-    position: fixed;
-    top: 25px;
-    left: 30px;
+    display: block;
+    width: 100%;
+    max-width: 600px;
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     font-size: 0.8rem;
     color: #1b46b4;
     text-decoration: none;
-    z-index: 100;
+    margin-bottom: 8px;
 }
 
 .back-link:hover {
-    text-decoration: underline;
-}
+    text-decoration: underline;}
 
 body {
     background-image: url('/assets/images/bakgrund1.jpg');
@@ -63,7 +62,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
 }
 
 .logo {
@@ -78,6 +77,14 @@ main {
     width: 100%;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     color: #1a1a1a;
+}
+
+#upload-card {
+    max-width: 420px;
+}
+
+#upload-card.expanded {
+    max-width: 600px;
 }
 
 .upload-row {
@@ -116,9 +123,9 @@ main {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    border: 1.5px solid #aaa;
+    border: 1.5px solid #666;
     background: none;
-    color: #aaa;
+    color: #666;
     font-size: 0.75rem;
     font-style: italic;
     font-family: Georgia, serif;
@@ -134,18 +141,19 @@ main {
     margin-top: 12px;
     background: #f0f4ff;
     border-radius: 0px;
-    padding: 12px 14px;
+    padding: 10px 14px;
     font-family: 'Gotham Medium', sans-serif;
-    font-size: 0.8rem;
-    line-height: 1.7;
-    color: #333;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #555;
 }
 
 .info-popup strong {
     font-family: 'Gotham Bold', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
+    color: #333;
 }
 
 .info-popup ul {
@@ -154,7 +162,7 @@ main {
 }
 
 .info-popup ul li {
-    margin-bottom: 2px;
+    margin-bottom: 1px;
 }
 
 .btn[hidden] { display: none; }
@@ -275,14 +283,19 @@ main {
 }
 
 .swisha {
-    font-size: 0.9rem;
-    color: #555;
+    font-size: 0.85rem;
+    color: #666;
     text-align: center;
     line-height: 1.6;
 }
 
-.swisha strong {
+.swisha .swisha-rubrik {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
     color: #1a1a1a;
+    margin-bottom: 4px;
 }
 
 .konto-logo {

@@ -71,6 +71,8 @@ infoBtn.addEventListener('click', () => {
     infoPopup.hidden = !infoPopup.hidden;
 });
 
+const uploadCard = document.getElementById('upload-card');
+
 fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (file) {
@@ -79,6 +81,7 @@ fileInput.addEventListener('change', () => {
         preview.style.display = 'block';
         analyzeBtn.hidden = false;
         resultCard.hidden = true;
+        uploadCard.classList.add('expanded');
     }
 });
 
