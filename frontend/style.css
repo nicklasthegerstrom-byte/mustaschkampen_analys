@@ -26,20 +26,24 @@
     padding: 0;
 }
 
-.back-link {
-    display: block;
+.site-header {
     width: 100%;
-    max-width: 600px;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 12px 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.back-link {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     font-size: 0.8rem;
     color: #1b46b4;
     text-decoration: none;
-    margin-bottom: 8px;
 }
 
 .back-link:hover {
-    text-decoration: underline;}
+    text-decoration: underline;
+}
 
 body {
     background-image: url('/assets/images/bakgrund1.jpg');
@@ -51,9 +55,9 @@ body {
     font-family: 'Gotham Medium', sans-serif;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 40px 20px;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
 }
 
 main {
@@ -63,6 +67,7 @@ main {
     flex-direction: column;
     align-items: center;
     gap: 16px;
+    padding: 32px 20px 0;
 }
 
 .logo {
