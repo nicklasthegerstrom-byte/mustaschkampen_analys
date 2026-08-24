@@ -79,7 +79,7 @@ def _draw_class_text(draw, text, cx, cy, max_w, fill, max_size=76):
 
 
 def create_share_image(photo, score, title):
-    template_path = "assets/mall/mall.png"
+    template_path = "assets/images/mall.png"
     if not os.path.exists(template_path):
         return None
     template = Image.open(template_path).convert("RGBA")

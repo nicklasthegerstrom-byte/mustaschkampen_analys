@@ -27,7 +27,7 @@
 }
 
 body {
-    background-image: url('/assets/mall/bakgrund1.jpg');
+    background-image: url('/assets/images/bakgrund1.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -267,4 +267,9 @@ main {
 
 .swisha strong {
     color: #1a1a1a;
+}
+
+.konto-logo {
+    width: 160px;
+    max-width: 100%;
 }
