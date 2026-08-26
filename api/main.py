@@ -78,22 +78,13 @@ def _draw_class_text(draw, text, cx, cy, max_w, fill, max_size=76):
             return
 
 
-def create_share_image(photo, score, title, face_box=None):
+def create_share_image(photo, score, title):
     template_path = "assets/images/mall.png"
     if not os.path.exists(template_path):
         return None
     template = Image.open(template_path).convert("RGBA")
     canvas = template.copy()
     photo = photo.convert("RGB")
-    if face_box is not None:
-        x1, y1, x2, y2 = face_box
-        pw, ph = photo.size
-        margin = max((x2 - x1), (y2 - y1)) * 0.4
-        x1 = int(max(0, x1 - margin))
-        y1 = int(max(0, y1 - margin))
-        x2 = int(min(pw, x2 + margin))
-        y2 = int(min(ph, y2 + margin))
-        photo = photo.crop((x1, y1, x2, y2))
     cropped = _cover_crop(photo, PHOTO_W, PHOTO_H)
     canvas.paste(cropped, (PHOTO_X, PHOTO_Y))
     draw = ImageDraw.Draw(canvas)
@@ -133,7 +124,7 @@ async def analyze(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Inget ansikte hittades.")
 
     if not result["mustache"]:
-        share_image = create_share_image(result.get("resized_image", image), 0, "Mustaschlös")
+        share_image = create_share_image(image, 0, "Mustaschlös")
         certificate_b64 = None
         if share_image is not None:
             buf = io.BytesIO()
@@ -161,7 +152,7 @@ async def analyze(file: UploadFile = File(...)):
 
     title, description, _ = classify_epicness(score)
 
-    share_image = create_share_image(result.get("resized_image", image), score, title, face_box=result.get("face_box"))
+    share_image = create_share_image(image, score, title)
     certificate_b64 = None
     if share_image is not None:
         buf = io.BytesIO()
