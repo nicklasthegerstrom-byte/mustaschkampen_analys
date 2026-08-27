@@ -34,18 +34,17 @@
 
 .site-header {
     position: fixed;
-    top: 12px;
-    left: 16px;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
 }
 
+.swish-mobile { display: none; }
+
 @media (max-width: 600px) {
-    .site-header {
-        top: auto;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+    .swish-desktop { display: none; }
+    .swish-mobile { display: block; }
 }
 
 .back-link {
@@ -376,6 +375,12 @@ main {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+}
+
+.swish-link {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
 }
 
 .konto-logo {
