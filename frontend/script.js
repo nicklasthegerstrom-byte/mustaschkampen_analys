@@ -58,12 +58,10 @@ const errorCard = document.getElementById('error-card');
 
 const shareRow = document.getElementById('share-row');
 const shareInstagram = document.getElementById('share-instagram');
-
-let currentCertBlob = null;
-
-const shareInstagram = document.getElementById('share-instagram');
 const shareX = document.getElementById('share-x');
 const shareFacebook = document.getElementById('share-facebook');
+
+let currentCertBlob = null;
 
 shareInstagram.addEventListener('click', async () => {
     if (!currentCertBlob) return;
