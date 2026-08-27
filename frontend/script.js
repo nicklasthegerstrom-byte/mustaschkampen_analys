@@ -55,6 +55,7 @@ resultVideoEl.addEventListener('ended', () => {
 });
 
 const errorCard = document.getElementById('error-card');
+const errorMsg = document.getElementById('error-msg');
 
 const shareAllBtn = document.getElementById('share-all');
 
@@ -71,7 +72,8 @@ shareAllBtn.addEventListener('click', async () => {
     }
 });
 
-function showError() {
+function showError(msg = 'Inget ansikte upptäckt') {
+    errorMsg.textContent = msg;
     errorCard.hidden = false;
     setTimeout(() => { errorCard.hidden = true; }, 5000);
 }
@@ -122,11 +124,14 @@ analyzeBtn.addEventListener('click', async () => {
 
         if (!res.ok) {
             if (res.status === 422) {
-                showError();
+                showError('Inget ansikte upptäckt');
+            } else if (res.status === 403) {
+                showError('Den här bilden kan inte analyseras');
             } else {
                 const err = await res.json();
                 alert(err.detail || 'Något gick fel.');
             }
+            analyzeBtn.hidden = false;
             return;
         }
 
@@ -193,14 +198,16 @@ analyzeBtn.addEventListener('click', async () => {
 
         preview.style.display = 'none';
         fileName.textContent = 'Ingen fil vald';
+        analyzeBtn.hidden = true;
+        uploadCard.classList.remove('expanded');
 
         resultCard.hidden = false;
         resultCard.scrollIntoView({ behavior: 'smooth' });
 
     } catch (e) {
         alert('Kunde inte nå servern.');
+        analyzeBtn.hidden = false;
     } finally {
         stopLoading();
-        analyzeBtn.hidden = false;
     }
 });

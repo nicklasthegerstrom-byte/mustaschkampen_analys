@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pillow_heif import register_heif_opener
 
-from api.models import predict
+from api.models import predict, is_blocked
 from api.scoring import weighted_epic_score, classify_epicness
 from api import logger
 
@@ -112,6 +112,10 @@ async def analyze(file: UploadFile = File(...)):
     except Exception as e:
         asyncio.create_task(logger.log_error("upload_error", str(e)))
         raise HTTPException(status_code=400, detail="Kunde inte läsa bilden.")
+
+    if is_blocked(image):
+        asyncio.create_task(logger.log_error("blocked", "Blocklistat ansikte"))
+        raise HTTPException(status_code=403, detail="Den här bilden kan inte analyseras.")
 
     try:
         result = predict(image)

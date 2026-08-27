@@ -33,10 +33,19 @@
 }
 
 .site-header {
-    position: absolute;
+    position: fixed;
     top: 12px;
     left: 16px;
     z-index: 10;
+}
+
+@media (max-width: 600px) {
+    .site-header {
+        top: auto;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
 .back-link {
@@ -209,7 +218,7 @@ main {
     color: #ffffff;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.95rem;
-    font-weight: 100;
+    font-weight: 400;
     border: none;
     border-radius: 50px;
     cursor: pointer;
@@ -375,7 +384,7 @@ main {
 }
 
 .swish-logo {
-    width: 64px;
+    width: 128px;
     max-width: 100%;
     margin-top: 8px;
 }
