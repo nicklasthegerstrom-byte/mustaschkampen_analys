@@ -32,15 +32,9 @@
     padding: 0;
 }
 
-.site-header {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
 
-.swish-mobile { display: none; }
+.swish-desktop { width: 128px; }
+.swish-mobile { display: none; width: 64px; }
 
 @media (max-width: 600px) {
     .swish-desktop { display: none; }
@@ -81,7 +75,6 @@
 }
 
 body {
-    position: relative;
     background-image: url('/assets/images/bakgrund1.jpg');
     background-size: cover;
     background-position: center;
@@ -389,7 +382,6 @@ main {
 }
 
 .swish-logo {
-    width: 128px;
     max-width: 100%;
     margin-top: 8px;
 }
