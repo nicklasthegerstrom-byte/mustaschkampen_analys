@@ -20,6 +20,12 @@
     font-weight: 100;
 }
 
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/assets/fonts/Montserrat-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -31,18 +37,40 @@
     background: rgba(255, 255, 255, 0.85);
     padding: 12px 24px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    display: flex;
 }
 
 .back-link {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: #1b46b4;
     text-decoration: none;
+    background: #fff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    gap: 4px;
+}
+
+.back-icon {
+    width: 28px;
+    height: auto;
+    display: block;
+}
+
+.back-text {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 9px;
+    letter-spacing: normal;
+    text-transform: uppercase;
 }
 
 .back-link:hover {
-    text-decoration: underline;
+    transform: scale(1.07);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
 }
 
 body {
@@ -191,6 +219,31 @@ main {
 .btn:hover { background-color: #1640a0; }
 .btn:active { background-color: #123890; }
 
+.error-card {
+    text-align: center;
+    padding: 32px 24px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.error-blink {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #cc0000;
+    animation: blink 0.8s step-start infinite;
+    margin-bottom: 8px;
+}
+
+.error-msg {
+    font-family: 'Gotham Medium', sans-serif;
+    font-size: 0.9rem;
+    color: #444;
+}
+
 .loading-label {
     text-align: center;
     font-size: 0.9rem;
@@ -302,6 +355,45 @@ main {
     color: #1a1a1a;
     margin-bottom: 4px;
 }
+
+.share-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.share-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #fff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.share-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.share-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+}
+
+.share-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.share-x { background: #000; }
+.share-facebook { background: #1877f2; }
 
 .konto-logo {
     width: 160px;
