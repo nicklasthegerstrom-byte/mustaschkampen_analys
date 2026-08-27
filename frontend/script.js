@@ -56,37 +56,15 @@ resultVideoEl.addEventListener('ended', () => {
 
 const errorCard = document.getElementById('error-card');
 
-const shareRow = document.getElementById('share-row');
-const shareInstagram = document.getElementById('share-instagram');
-const shareX = document.getElementById('share-x');
-const shareFacebook = document.getElementById('share-facebook');
+const shareAllBtn = document.getElementById('share-all');
 
 let currentCertBlob = null;
 
-shareInstagram.addEventListener('click', async () => {
+shareAllBtn.addEventListener('click', async () => {
     if (!currentCertBlob) return;
     const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Min mustaschstyrka' });
-    }
-});
-
-shareX.addEventListener('click', async () => {
-    if (!currentCertBlob) return;
-    const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Min mustaschstyrka' });
-    } else {
-        const text = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
-        window.open('https://x.com/intent/tweet?text=' + text, '_blank', 'width=600,height=400');
-    }
-});
-
-shareFacebook.addEventListener('click', async () => {
-    if (!currentCertBlob) return;
-    const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka! 👨' });
+        await navigator.share({ files: [file], title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!' });
     } else {
         const url = encodeURIComponent(window.location.origin);
         window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=600,height=400');
@@ -195,9 +173,7 @@ analyzeBtn.addEventListener('click', async () => {
             for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
             currentCertBlob = new Blob([ab], { type: 'image/png' });
 
-            const canShareFiles = navigator.canShare && navigator.canShare({ files: [new File([currentCertBlob], 'x.png', { type: 'image/png' })] });
-            shareInstagram.style.display = canShareFiles ? 'flex' : 'none';
-            shareRow.hidden = false;
+            shareAllBtn.hidden = false;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
@@ -211,7 +187,7 @@ analyzeBtn.addEventListener('click', async () => {
             resultCert.style.display = 'none';
             certDownload.hidden = true;
             certMobileHint.hidden = true;
-            shareRow.hidden = true;
+            shareAllBtn.hidden = true;
             currentCertBlob = null;
         }
 

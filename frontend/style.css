@@ -46,7 +46,7 @@
     color: #1b46b4;
     text-decoration: none;
     background: #fff;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 8px 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.13);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -356,44 +356,18 @@ main {
     margin-bottom: 4px;
 }
 
-.share-row {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-}
-
-.share-btn {
+.share-all-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 9px 16px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: #fff;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.share-btn svg {
-    width: 18px;
-    height: 18px;
+.share-icon {
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
 }
-
-.share-btn:hover {
-    transform: scale(1.06);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.22);
-}
-
-.share-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-.share-x { background: #000; }
-.share-facebook { background: #1877f2; }
 
 .konto-logo {
     width: 160px;
