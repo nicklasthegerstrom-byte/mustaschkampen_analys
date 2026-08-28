@@ -121,6 +121,13 @@ main {
     max-width: 600px;
 }
 
+.upload-intro {
+    font-family: 'Gotham Medium', sans-serif;
+    font-size: 0.85rem;
+    color: #444;
+    margin-bottom: 14px;
+}
+
 .upload-row {
     display: flex;
     align-items: center;
@@ -133,7 +140,7 @@ main {
     background-color: #1b46b4;
     color: #ffffff;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 100;
+    font-weight: 400;
     font-size: 0.9rem;
     border-radius: 50px;
     cursor: pointer;
