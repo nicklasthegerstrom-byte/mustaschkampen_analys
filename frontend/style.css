@@ -36,9 +36,28 @@
 .swish-desktop { width: 128px; }
 .swish-mobile { display: none; width: 64px; }
 
+.back-link-wrap {
+    display: none;
+}
+
+@media (min-width: 601px) {
+    .back-link-fixed {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+    }
+    .back-link-bottom {
+        display: none;
+    }
+}
+
 @media (max-width: 600px) {
     .swish-desktop { display: none; }
     .swish-mobile { display: block; }
+    .back-link-fixed {
+        display: none;
+    }
 }
 
 .back-link {
