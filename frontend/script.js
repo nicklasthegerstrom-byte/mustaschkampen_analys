@@ -57,20 +57,11 @@ resultVideoEl.addEventListener('ended', () => {
 const errorCard = document.getElementById('error-card');
 const errorMsg = document.getElementById('error-msg');
 
-const shareAllBtn = document.getElementById('share-all');
+const shareRow = document.getElementById('share-row');
+const shareFacebook = document.getElementById('share-facebook');
+const shareX = document.getElementById('share-x');
 
 let currentCertBlob = null;
-
-shareAllBtn.addEventListener('click', async () => {
-    if (!currentCertBlob) return;
-    const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!' });
-    } else {
-        const url = encodeURIComponent(window.location.origin);
-        window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=600,height=400');
-    }
-});
 
 function showError(msg = 'Inget ansikte upptäckt') {
     errorMsg.textContent = msg;
@@ -178,7 +169,11 @@ analyzeBtn.addEventListener('click', async () => {
             for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
             currentCertBlob = new Blob([ab], { type: 'image/png' });
 
-            shareAllBtn.hidden = false;
+            const appUrl = encodeURIComponent(window.location.origin);
+            const tweetText = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
+            shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + appUrl;
+            shareX.href = 'https://x.com/intent/tweet?text=' + tweetText;
+            shareRow.hidden = false;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
@@ -192,7 +187,7 @@ analyzeBtn.addEventListener('click', async () => {
             resultCert.style.display = 'none';
             certDownload.hidden = true;
             certMobileHint.hidden = true;
-            shareAllBtn.hidden = true;
+            shareRow.hidden = true;
             currentCertBlob = null;
         }
 
