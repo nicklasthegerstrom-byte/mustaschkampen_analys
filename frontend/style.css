@@ -96,9 +96,9 @@
 body {
     background-image: url('/assets/images/bakgrund1.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: center top;
     background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-repeat: repeat-y;
     color: #1a1a1a;
     font-family: 'Gotham Medium', sans-serif;
     min-height: 100vh;
@@ -417,16 +417,13 @@ main {
 .share-x { background: #000; }
 .share-facebook { background: #1877f2; }
 
-.swish-link {
-    color: inherit;
-    font-weight: 700;
-    text-decoration: underline;
+.swish-btn {
+    text-decoration: none;
 }
 
 @media (min-width: 601px) {
-    .swish-link {
-        pointer-events: none;
-        text-decoration: none;
+    .swish-btn {
+        display: none;
     }
 }
 

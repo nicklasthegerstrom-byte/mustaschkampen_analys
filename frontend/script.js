@@ -57,11 +57,20 @@ resultVideoEl.addEventListener('ended', () => {
 const errorCard = document.getElementById('error-card');
 const errorMsg = document.getElementById('error-msg');
 
-const shareRow = document.getElementById('share-row');
+const shareMobile = document.getElementById('share-mobile');
+const shareDesktop = document.getElementById('share-desktop');
 const shareFacebook = document.getElementById('share-facebook');
 const shareX = document.getElementById('share-x');
 
 let currentCertBlob = null;
+
+shareMobile.addEventListener('click', async () => {
+    if (!currentCertBlob) return;
+    const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!' });
+    }
+});
 
 function showError(msg = 'Inget ansikte upptäckt') {
     errorMsg.textContent = msg;
@@ -173,7 +182,9 @@ analyzeBtn.addEventListener('click', async () => {
             const tweetText = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
             shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + appUrl;
             shareX.href = 'https://x.com/intent/tweet?text=' + tweetText;
-            shareRow.hidden = false;
+            const canShare = navigator.canShare && navigator.canShare({ files: [new File([currentCertBlob], 'x.png', { type: 'image/png' })] });
+            shareMobile.hidden = !canShare;
+            shareDesktop.hidden = canShare;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
@@ -187,7 +198,8 @@ analyzeBtn.addEventListener('click', async () => {
             resultCert.style.display = 'none';
             certDownload.hidden = true;
             certMobileHint.hidden = true;
-            shareRow.hidden = true;
+            shareMobile.hidden = true;
+            shareDesktop.hidden = true;
             currentCertBlob = null;
         }
 
