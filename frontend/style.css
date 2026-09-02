@@ -392,6 +392,12 @@ main {
 
 .share-all-btn[hidden] { display: none; }
 
+.share-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
 .share-row {
     display: flex;
     justify-content: center;
