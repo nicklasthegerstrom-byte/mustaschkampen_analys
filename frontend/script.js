@@ -208,7 +208,7 @@ analyzeBtn.addEventListener('click', async () => {
         resultCard.scrollIntoView({ behavior: 'smooth' });
 
     } catch (e) {
-        alert('Kunde inte nå servern.');
+        alert('Fel: ' + (e && e.message ? e.message : String(e)));
         analyzeBtn.hidden = false;
     } finally {
         stopLoading();
