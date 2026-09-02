@@ -113,7 +113,12 @@ async def analyze(file: UploadFile = File(...)):
         asyncio.create_task(logger.log_error("upload_error", str(e)))
         raise HTTPException(status_code=400, detail="Kunde inte läsa bilden.")
 
-    if is_blocked(image):
+    try:
+        blocked = is_blocked(image)
+    except Exception as e:
+        asyncio.create_task(logger.log_error("blocklist_error", str(e)))
+        blocked = False
+    if blocked:
         asyncio.create_task(logger.log_error("blocked", "Blocklistat ansikte"))
         raise HTTPException(status_code=403, detail="Den här bilden kan inte analyseras.")
 
@@ -128,12 +133,15 @@ async def analyze(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Inget ansikte hittades.")
 
     if not result["mustache"]:
-        share_image = create_share_image(image, 0, "Mustaschlös")
         certificate_b64 = None
-        if share_image is not None:
-            buf = io.BytesIO()
-            share_image.save(buf, format="PNG")
-            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+        try:
+            share_image = create_share_image(image, 0, "Mustaschlös")
+            if share_image is not None:
+                buf = io.BytesIO()
+                share_image.save(buf, format="PNG")
+                certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+        except Exception as e:
+            asyncio.create_task(logger.log_error("cert_error", str(e)))
         return {
             "score": 0,
             "title": "🚫 Mustaschlös",
@@ -156,12 +164,15 @@ async def analyze(file: UploadFile = File(...)):
 
     title, description, _ = classify_epicness(score)
 
-    share_image = create_share_image(image, score, title)
     certificate_b64 = None
-    if share_image is not None:
-        buf = io.BytesIO()
-        share_image.save(buf, format="PNG")
-        certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+    try:
+        share_image = create_share_image(image, score, title)
+        if share_image is not None:
+            buf = io.BytesIO()
+            share_image.save(buf, format="PNG")
+            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        asyncio.create_task(logger.log_error("cert_error", str(e)))
 
     asyncio.create_task(logger.log_analysis(score))
 

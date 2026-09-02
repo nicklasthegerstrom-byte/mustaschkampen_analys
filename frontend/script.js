@@ -175,11 +175,15 @@ analyzeBtn.addEventListener('click', async () => {
             resultCert.src = dataUrl;
             resultCert.style.display = 'block';
 
-            const byteStr = atob(data.certificate);
-            const ab = new ArrayBuffer(byteStr.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-            currentCertBlob = new Blob([ab], { type: 'image/png' });
+            try {
+                const byteStr = atob(data.certificate);
+                const ab = new ArrayBuffer(byteStr.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+                currentCertBlob = new Blob([ab], { type: 'image/png' });
+            } catch (_) {
+                currentCertBlob = null;
+            }
 
             shareMobile.hidden = !isMobile;
 
@@ -208,7 +212,7 @@ analyzeBtn.addEventListener('click', async () => {
         resultCard.scrollIntoView({ behavior: 'smooth' });
 
     } catch (e) {
-        alert('Fel: ' + (e && e.message ? e.message : String(e)));
+        alert('Kunde inte nå servern.');
         analyzeBtn.hidden = false;
     } finally {
         stopLoading();
