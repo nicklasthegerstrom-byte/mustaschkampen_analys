@@ -58,9 +58,6 @@ const errorCard = document.getElementById('error-card');
 const errorMsg = document.getElementById('error-msg');
 
 const shareMobile = document.getElementById('share-mobile');
-const shareDesktop = document.getElementById('share-desktop');
-const shareFacebook = document.getElementById('share-facebook');
-const shareX = document.getElementById('share-x');
 
 let currentCertBlob = null;
 
@@ -184,12 +181,7 @@ analyzeBtn.addEventListener('click', async () => {
             for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
             currentCertBlob = new Blob([ab], { type: 'image/png' });
 
-            const appUrl = encodeURIComponent(window.location.origin);
-            const tweetText = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
-            shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + appUrl;
-            shareX.href = 'https://x.com/intent/tweet?text=' + tweetText;
             shareMobile.hidden = !isMobile;
-            shareDesktop.hidden = isMobile;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
@@ -204,7 +196,6 @@ analyzeBtn.addEventListener('click', async () => {
             certDownload.hidden = true;
             certMobileHint.hidden = true;
             shareMobile.hidden = true;
-            shareDesktop.hidden = true;
             currentCertBlob = null;
         }
 

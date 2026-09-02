@@ -383,6 +383,15 @@ main {
     margin-bottom: 4px;
 }
 
+.share-all-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.share-all-btn[hidden] { display: none; }
+
 .share-row {
     display: flex;
     justify-content: center;
