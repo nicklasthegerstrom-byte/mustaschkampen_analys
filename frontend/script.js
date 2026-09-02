@@ -182,7 +182,10 @@ analyzeBtn.addEventListener('click', async () => {
             const tweetText = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
             shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + appUrl;
             shareX.href = 'https://x.com/intent/tweet?text=' + tweetText;
-            const canShare = navigator.canShare && navigator.canShare({ files: [new File([currentCertBlob], 'x.png', { type: 'image/png' })] });
+            let canShare = false;
+            try {
+                canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([currentCertBlob], 'x.png', { type: 'image/png' })] }));
+            } catch (_) {}
             shareMobile.hidden = !canShare;
             shareDesktop.hidden = canShare;
 
