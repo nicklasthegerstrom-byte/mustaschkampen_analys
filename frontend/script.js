@@ -65,11 +65,17 @@ const shareX = document.getElementById('share-x');
 let currentCertBlob = null;
 
 shareMobile.addEventListener('click', async () => {
-    if (!currentCertBlob) return;
-    const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!' });
+    const shareData = { title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!', url: window.location.origin };
+    if (currentCertBlob) {
+        const file = new File([currentCertBlob], 'mustaschkraft.png', { type: 'image/png' });
+        try {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], ...shareData });
+                return;
+            }
+        } catch (_) {}
     }
+    try { await navigator.share(shareData); } catch (_) {}
 });
 
 function showError(msg = 'Inget ansikte upptäckt') {
@@ -182,12 +188,8 @@ analyzeBtn.addEventListener('click', async () => {
             const tweetText = encodeURIComponent('Kolla min mustaschstyrka! Testa din på ' + window.location.origin);
             shareFacebook.href = 'https://www.facebook.com/sharer/sharer.php?u=' + appUrl;
             shareX.href = 'https://x.com/intent/tweet?text=' + tweetText;
-            let canShare = false;
-            try {
-                canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([currentCertBlob], 'x.png', { type: 'image/png' })] }));
-            } catch (_) {}
-            shareMobile.hidden = !canShare;
-            shareDesktop.hidden = canShare;
+            shareMobile.hidden = !isMobile;
+            shareDesktop.hidden = isMobile;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
