@@ -117,7 +117,7 @@ async def analyze(file: UploadFile = File(...)):
         blocked = is_blocked(image)
     except Exception as e:
         asyncio.create_task(logger.log_error("blocklist_error", str(e)))
-        blocked = False
+        raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
     if blocked:
         asyncio.create_task(logger.log_error("blocked", "Blocklistat ansikte"))
         raise HTTPException(status_code=403, detail="Den här bilden kan inte analyseras.")

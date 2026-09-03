@@ -168,9 +168,11 @@ analyzeBtn.addEventListener('click', async () => {
 
         const certDownload = document.getElementById('cert-download');
         const certMobileHint = document.getElementById('cert-mobile-hint');
+        const certError = document.getElementById('cert-error');
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
         if (data.certificate) {
+            certError.hidden = true;
             const dataUrl = 'data:image/png;base64,' + data.certificate;
             resultCert.src = dataUrl;
             resultCert.style.display = 'block';
@@ -199,6 +201,7 @@ analyzeBtn.addEventListener('click', async () => {
             resultCert.style.display = 'none';
             certDownload.hidden = true;
             certMobileHint.hidden = true;
+            certError.hidden = false;
             shareMobile.hidden = true;
             currentCertBlob = null;
         }
