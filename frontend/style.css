@@ -367,6 +367,19 @@ main {
     margin-top: 8px;
 }
 
+.swish-nummer {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    text-align: center;
+    margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+    .swish-nummer { display: none; }
+}
+
 .swisha {
     font-size: 0.85rem;
     color: #666;
