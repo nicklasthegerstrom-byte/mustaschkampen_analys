@@ -27,7 +27,7 @@ SHARE_FILL = (54, 88, 159)
 # Reel certificate constants (1024x1920)
 REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 118, 304, 706, 788
 REEL_CLASS_Y = 1140
-REEL_SCORE_Y = 1360
+REEL_SCORE_Y = 1330
 REEL_CENTER_X = 118 + 706 // 2
 
 
@@ -95,11 +95,23 @@ def create_reel_image(photo, score, title):
     canvas.paste(cropped, (REEL_PHOTO_X, REEL_PHOTO_Y))
     draw = ImageDraw.Draw(canvas)
     score_str = f"{score:.0f}"
-    score_size = 200 if len(score_str) == 3 else 240
-    suffix_size = score_size // 3
+    score_size = 200 if len(score_str) == 3 else 230
     title_text = _strip_emoji(title).upper()
     _draw_class_text(draw, title_text, REEL_CENTER_X, REEL_CLASS_Y, REEL_PHOTO_W, SHARE_FILL)
-    _draw_score_block(draw, score_str, REEL_CENTER_X, REEL_SCORE_Y, _load_font(score_size), _load_font(suffix_size), SHARE_FILL)
+
+    # Score med /100 i överkant
+    score_font = _load_font(score_size)
+    suffix_font = _load_font(80)
+    sb = draw.textbbox((0, 0), score_str, font=score_font)
+    sw, sh = sb[2] - sb[0], sb[3] - sb[1]
+    fb = draw.textbbox((0, 0), "/100", font=suffix_font)
+    fw = fb[2] - fb[0]
+    total_w = sw + 20 + fw
+    start_x = REEL_CENTER_X - total_w // 2
+    score_top = REEL_SCORE_Y - sh // 2 - sb[1]
+    draw.text((start_x - sb[0], score_top), score_str, font=score_font, fill=SHARE_FILL)
+    draw.text((start_x + sw + 20 - fb[0], score_top - fb[1]), "/100", font=suffix_font, fill=SHARE_FILL)
+
     return canvas.convert("RGB")
 
 
