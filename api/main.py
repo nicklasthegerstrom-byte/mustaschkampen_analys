@@ -24,6 +24,12 @@ CLASS_Y, CLASS_H = 1620, 45
 IMAGE_CENTER_X = 920
 SHARE_FILL = (54, 88, 159)
 
+# Reel certificate constants (1024x1920)
+REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 120, 271, 706, 789
+REEL_CLASS_Y = 1150
+REEL_SCORE_Y = 1400
+REEL_CENTER_X = 512
+
 
 def _cover_crop(img, w, h):
     iw, ih = img.size
@@ -76,6 +82,25 @@ def _draw_class_text(draw, text, cx, cy, max_w, fill, max_size=76):
             text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
             draw.text((cx - text_w // 2 - bbox[0], cy - text_h // 2 - bbox[1]), text, font=font, fill=fill)
             return
+
+
+def create_reel_image(photo, score, title):
+    template_path = "assets/images/mall_reel.png"
+    if not os.path.exists(template_path):
+        return None
+    template = Image.open(template_path).convert("RGBA")
+    canvas = template.copy()
+    photo = photo.convert("RGB")
+    cropped = _cover_crop(photo, REEL_PHOTO_W, REEL_PHOTO_H)
+    canvas.paste(cropped, (REEL_PHOTO_X, REEL_PHOTO_Y))
+    draw = ImageDraw.Draw(canvas)
+    score_str = f"{score:.0f}"
+    score_size = 200 if len(score_str) == 3 else 240
+    suffix_size = score_size // 3
+    title_text = _strip_emoji(title).upper()
+    _draw_class_text(draw, title_text, REEL_CENTER_X, REEL_CLASS_Y, REEL_PHOTO_W, SHARE_FILL)
+    _draw_score_block(draw, score_str, REEL_CENTER_X, REEL_SCORE_Y, _load_font(score_size), _load_font(suffix_size), SHARE_FILL)
+    return canvas.convert("RGB")
 
 
 def create_share_image(photo, score, title):
@@ -174,6 +199,16 @@ async def analyze(file: UploadFile = File(...)):
     except Exception as e:
         asyncio.create_task(logger.log_error("cert_error", str(e)))
 
+    reel_b64 = None
+    try:
+        reel_image = create_reel_image(image, score, title)
+        if reel_image is not None:
+            buf = io.BytesIO()
+            reel_image.save(buf, format="PNG")
+            reel_b64 = base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        asyncio.create_task(logger.log_error("reel_cert_error", str(e)))
+
     asyncio.create_task(logger.log_analysis(score))
 
     return {
@@ -182,6 +217,7 @@ async def analyze(file: UploadFile = File(...)):
         "description": description,
         "mustache": True,
         "certificate": certificate_b64,
+        "reel_certificate": reel_b64,
     }
 
 

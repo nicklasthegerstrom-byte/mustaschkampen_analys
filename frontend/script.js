@@ -167,6 +167,7 @@ analyzeBtn.addEventListener('click', async () => {
         }
 
         const certDownload = document.getElementById('cert-download');
+        const reelDownload = document.getElementById('reel-download');
         const certMobileHint = document.getElementById('cert-mobile-hint');
         const certError = document.getElementById('cert-error');
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -192,10 +193,17 @@ analyzeBtn.addEventListener('click', async () => {
             if (isMobile) {
                 certMobileHint.hidden = false;
                 certDownload.hidden = true;
+                reelDownload.hidden = true;
             } else {
                 certDownload.href = dataUrl;
                 certDownload.hidden = false;
                 certMobileHint.hidden = true;
+                if (data.reel_certificate) {
+                    reelDownload.href = 'data:image/png;base64,' + data.reel_certificate;
+                    reelDownload.hidden = false;
+                } else {
+                    reelDownload.hidden = true;
+                }
             }
         } else {
             resultCert.style.display = 'none';
