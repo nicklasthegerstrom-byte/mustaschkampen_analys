@@ -25,10 +25,10 @@ IMAGE_CENTER_X = 920
 SHARE_FILL = (54, 88, 159)
 
 # Reel certificate constants (1024x1920)
-REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 120, 271, 706, 789
-REEL_CLASS_Y = 1150
-REEL_SCORE_Y = 1400
-REEL_CENTER_X = 512
+REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 118, 304, 706, 788
+REEL_CLASS_Y = 1140
+REEL_SCORE_Y = 1360
+REEL_CENTER_X = 118 + 706 // 2
 
 
 def _cover_crop(img, w, h):
@@ -160,10 +160,10 @@ async def analyze(file: UploadFile = File(...)):
     if not result["mustache"]:
         certificate_b64 = None
         try:
-            share_image = create_share_image(image, 0, "Mustaschlös")
-            if share_image is not None:
+            reel_image = create_reel_image(image, 0, "Mustaschlös")
+            if reel_image is not None:
                 buf = io.BytesIO()
-                share_image.save(buf, format="PNG")
+                reel_image.save(buf, format="PNG")
                 certificate_b64 = base64.b64encode(buf.getvalue()).decode()
         except Exception as e:
             asyncio.create_task(logger.log_error("cert_error", str(e)))
@@ -191,23 +191,13 @@ async def analyze(file: UploadFile = File(...)):
 
     certificate_b64 = None
     try:
-        share_image = create_share_image(image, score, title)
-        if share_image is not None:
-            buf = io.BytesIO()
-            share_image.save(buf, format="PNG")
-            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
-    except Exception as e:
-        asyncio.create_task(logger.log_error("cert_error", str(e)))
-
-    reel_b64 = None
-    try:
         reel_image = create_reel_image(image, score, title)
         if reel_image is not None:
             buf = io.BytesIO()
             reel_image.save(buf, format="PNG")
-            reel_b64 = base64.b64encode(buf.getvalue()).decode()
+            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
     except Exception as e:
-        asyncio.create_task(logger.log_error("reel_cert_error", str(e)))
+        asyncio.create_task(logger.log_error("cert_error", str(e)))
 
     asyncio.create_task(logger.log_analysis(score))
 
@@ -217,7 +207,6 @@ async def analyze(file: UploadFile = File(...)):
         "description": description,
         "mustache": True,
         "certificate": certificate_b64,
-        "reel_certificate": reel_b64,
     }
 
 
