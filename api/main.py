@@ -24,11 +24,17 @@ CLASS_Y, CLASS_H = 1620, 45
 IMAGE_CENTER_X = 920
 SHARE_FILL = (54, 88, 159)
 
-# Reel certificate constants (1024x1920)
+# Reel certificate constants (1080x1920)
 REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 135, 349, 811, 904
 REEL_CLASS_Y = 1320
 REEL_SCORE_Y = 1540
 REEL_CENTER_X = 135 + 811 // 2  # = 540
+
+# Post certificate constants (1080x1350)
+POST_PHOTO_X, POST_PHOTO_Y, POST_PHOTO_W, POST_PHOTO_H = 210, 226, 655, 652
+POST_CLASS_Y = 920
+POST_SCORE_Y = 1085
+POST_CENTER_X = 128 + 807 // 2  # = 531
 
 
 def _cover_crop(img, w, h):
@@ -109,6 +115,37 @@ def create_reel_image(photo, score, title):
     total_w = sw + 20 + fw
     start_x = REEL_CENTER_X - total_w // 2
     score_top = REEL_SCORE_Y - sh // 2 - sb[1]
+    draw.text((start_x - sb[0], score_top), score_str, font=score_font, fill=SHARE_FILL)
+    draw.text((start_x + sw + 20 - fb[0], score_top - fb[1]), "/100", font=suffix_font, fill=SHARE_FILL)
+
+    return canvas.convert("RGB")
+
+
+def create_post_image(photo, score, title):
+    template_path = "assets/images/mall_post.png"
+    if not os.path.exists(template_path):
+        return None
+    template = Image.open(template_path).convert("RGBA")
+    canvas = template.copy()
+    photo = photo.convert("RGB")
+    cropped = _cover_crop(photo, POST_PHOTO_W, POST_PHOTO_H)
+    canvas.paste(cropped, (POST_PHOTO_X, POST_PHOTO_Y))
+    draw = ImageDraw.Draw(canvas)
+    score_str = f"{score:.0f}"
+    score_size = 240 if len(score_str) == 3 else 300
+    title_text = _strip_emoji(title).upper()
+    _draw_class_text(draw, title_text, POST_CENTER_X, POST_CLASS_Y, POST_PHOTO_W, SHARE_FILL, max_size=48)
+
+    # Score med /100 i överkant
+    score_font = _load_font(score_size)
+    suffix_font = _load_font(52)
+    sb = draw.textbbox((0, 0), score_str, font=score_font)
+    sw, sh = sb[2] - sb[0], sb[3] - sb[1]
+    fb = draw.textbbox((0, 0), "/100", font=suffix_font)
+    fw = fb[2] - fb[0]
+    total_w = sw + 20 + fw
+    start_x = POST_CENTER_X - total_w // 2
+    score_top = POST_SCORE_Y - sh // 2 - sb[1]
     draw.text((start_x - sb[0], score_top), score_str, font=score_font, fill=SHARE_FILL)
     draw.text((start_x + sw + 20 - fb[0], score_top - fb[1]), "/100", font=suffix_font, fill=SHARE_FILL)
 
@@ -220,6 +257,78 @@ async def analyze(file: UploadFile = File(...)):
         "mustache": True,
         "certificate": certificate_b64,
     }
+
+
+def _run_analysis(image: Image.Image):
+    """Gemensam analys-logik för båda endpoints."""
+    try:
+        blocked = is_blocked(image)
+    except Exception as e:
+        asyncio.create_task(logger.log_error("blocklist_error", str(e)))
+        raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
+    if blocked:
+        asyncio.create_task(logger.log_error("blocked", "Blocklistat ansikte"))
+        raise HTTPException(status_code=403, detail="Den här bilden kan inte analyseras.")
+
+    try:
+        result = predict(image)
+    except Exception as e:
+        asyncio.create_task(logger.log_error("predict_error", str(e)))
+        raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
+
+    if result is None:
+        asyncio.create_task(logger.log_error("no_face", "Inget ansikte hittades"))
+        raise HTTPException(status_code=422, detail="Inget ansikte hittades.")
+
+    if not result["mustache"]:
+        return {"mustache": False, "score": 0, "title": "🚫 Mustaschlös",
+                "description": "Överläppen verkar för närvarande sakna tillräcklig auktoritet."}
+
+    p_epic        = result["p_epic"]
+    p_medium      = result["p_medium"]
+    p_medium_thin = result["p_medium_thin"]
+    p_thin        = result["p_thin"]
+
+    if p_epic >= 0.99:
+        score = 100.0
+    else:
+        thin_score = 10 + (1 - p_thin) * 10
+        score = p_epic * 95 + p_medium * 80 + p_medium_thin * 50 + p_thin * thin_score
+    score = float(np.clip(score, 0, 100))
+    title, description, _ = classify_epicness(score)
+    return {"mustache": True, "score": round(score), "title": title, "description": description}
+
+
+@app.post("/analyze/post")
+async def analyze_post(file: UploadFile = File(...)):
+    MAX_SIZE = 20 * 1024 * 1024
+    try:
+        contents = await file.read()
+        if len(contents) > MAX_SIZE:
+            raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
+        image = Image.open(io.BytesIO(contents))
+        image = ImageOps.exif_transpose(image)
+    except HTTPException:
+        raise
+    except Exception as e:
+        asyncio.create_task(logger.log_error("upload_error", str(e)))
+        raise HTTPException(status_code=400, detail="Kunde inte läsa bilden.")
+
+    data = _run_analysis(image)
+
+    certificate_b64 = None
+    try:
+        post_image = create_post_image(image, data["score"], data["title"])
+        if post_image is not None:
+            buf = io.BytesIO()
+            post_image.save(buf, format="PNG")
+            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        asyncio.create_task(logger.log_error("cert_error", str(e)))
+
+    asyncio.create_task(logger.log_analysis(data["score"]))
+
+    return {**data, "certificate": certificate_b64}
 
 
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")

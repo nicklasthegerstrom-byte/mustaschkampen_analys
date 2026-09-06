@@ -123,7 +123,9 @@ analyzeBtn.addEventListener('click', async () => {
     formData.append('file', file);
 
     try {
-        const res = await fetch('/analyze', { method: 'POST', body: formData });
+        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        const endpoint = isMobileDevice ? '/analyze' : '/analyze/post';
+        const res = await fetch(endpoint, { method: 'POST', body: formData });
 
         if (!res.ok) {
             if (res.status === 422) {
