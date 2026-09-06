@@ -25,10 +25,10 @@ IMAGE_CENTER_X = 920
 SHARE_FILL = (54, 88, 159)
 
 # Reel certificate constants (1024x1920)
-REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 118, 304, 706, 788
-REEL_CLASS_Y = 1140
-REEL_SCORE_Y = 1330
-REEL_CENTER_X = 118 + 706 // 2
+REEL_PHOTO_X, REEL_PHOTO_Y, REEL_PHOTO_W, REEL_PHOTO_H = 128, 353, 768, 913
+REEL_CLASS_Y = 1330
+REEL_SCORE_Y = 1560
+REEL_CENTER_X = 128 + 768 // 2  # = 512
 
 
 def _cover_crop(img, w, h):
@@ -95,9 +95,9 @@ def create_reel_image(photo, score, title):
     canvas.paste(cropped, (REEL_PHOTO_X, REEL_PHOTO_Y))
     draw = ImageDraw.Draw(canvas)
     score_str = f"{score:.0f}"
-    score_size = 200 if len(score_str) == 3 else 230
+    score_size = 230 if len(score_str) == 3 else 270
     title_text = _strip_emoji(title).upper()
-    _draw_class_text(draw, title_text, REEL_CENTER_X, REEL_CLASS_Y, REEL_PHOTO_W, SHARE_FILL)
+    _draw_class_text(draw, title_text, REEL_CENTER_X, REEL_CLASS_Y, REEL_PHOTO_W, SHARE_FILL, max_size=58)
 
     # Score med /100 i överkant
     score_font = _load_font(score_size)
