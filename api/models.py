@@ -56,7 +56,7 @@ def is_blocked(image: Image.Image):
     return max(similarities) >= BLOCKLIST_THRESHOLD
 
 mustache_model = tf.keras.models.load_model("models/mustache_detector_new.keras")
-epic_model = tf.keras.models.load_model("models/epic_detector_4class_1.keras")
+epic_model = tf.keras.models.load_model("models/epic_detector_4class_2.keras")
 
 
 def prepare_image(image: Image.Image):

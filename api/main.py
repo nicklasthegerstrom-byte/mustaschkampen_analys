@@ -229,11 +229,7 @@ async def analyze(file: UploadFile = File(...)):
     p_medium_thin = result["p_medium_thin"]
     p_thin        = result["p_thin"]
 
-    if p_epic >= 0.99:
-        score = 100.0
-    else:
-        thin_score = 10 + (1 - p_thin) * 10
-        score = p_epic * 95 + p_medium * 80 + p_medium_thin * 50 + p_thin * thin_score
+    score = p_epic * 100 + p_medium * 80 + p_medium_thin * 50 + p_thin * (10 + (1 - p_thin) * 10)
     score = float(np.clip(score, 0, 100))
 
     title, description, _ = classify_epicness(score)
@@ -289,11 +285,7 @@ def _run_analysis(image: Image.Image):
     p_medium_thin = result["p_medium_thin"]
     p_thin        = result["p_thin"]
 
-    if p_epic >= 0.99:
-        score = 100.0
-    else:
-        thin_score = 10 + (1 - p_thin) * 10
-        score = p_epic * 95 + p_medium * 80 + p_medium_thin * 50 + p_thin * thin_score
+    score = p_epic * 100 + p_medium * 80 + p_medium_thin * 50 + p_thin * (10 + (1 - p_thin) * 10)
     score = float(np.clip(score, 0, 100))
     title, description, _ = classify_epicness(score)
     return {"mustache": True, "score": round(score), "title": title, "description": description}
