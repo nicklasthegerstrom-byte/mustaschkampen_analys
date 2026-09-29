@@ -448,16 +448,6 @@ main {
 
 .swish-btn {
     text-decoration: none;
-    margin-top: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.swish-btn-logo {
-    height: 22px;
-    width: auto;
-    flex-shrink: 0;
 }
 
 @media (min-width: 601px) {
