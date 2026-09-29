@@ -449,19 +449,15 @@ main {
 .swish-btn {
     text-decoration: none;
     margin-top: 4px;
-    position: relative;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding-left: 28px;
-    padding-right: 56px;
+    gap: 12px;
 }
 
 .swish-btn-logo {
-    position: absolute;
-    right: 16px;
-    height: 26px;
+    height: 22px;
     width: auto;
+    flex-shrink: 0;
 }
 
 @media (min-width: 601px) {
