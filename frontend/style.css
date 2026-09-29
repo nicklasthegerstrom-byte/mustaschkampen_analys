@@ -34,7 +34,7 @@
 
 
 .swish-desktop { width: 128px; }
-.swish-mobile { display: none; width: 64px; }
+.swish-mobile { display: none; width: 44px; }
 
 .back-link-wrap {
     display: none;
@@ -448,6 +448,7 @@ main {
 
 .swish-btn {
     text-decoration: none;
+    margin-top: 4px;
 }
 
 @media (min-width: 601px) {
@@ -463,5 +464,5 @@ main {
 
 .swish-logo {
     max-width: 100%;
-    margin-top: 8px;
+    margin-top: 2px;
 }
