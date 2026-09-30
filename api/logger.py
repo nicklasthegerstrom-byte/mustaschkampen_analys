@@ -38,6 +38,10 @@ async def log_analysis(score: float):
     await _write("analysis", score=score)
 
 
+async def log_swish_click():
+    await _write("swish_click")
+
+
 async def log_error(event: str, error_msg: str):
     await _write(event, error_msg=error_msg)
 

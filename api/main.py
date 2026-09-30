@@ -323,5 +323,11 @@ async def analyze_post(file: UploadFile = File(...)):
     return {**data, "certificate": certificate_b64}
 
 
+@app.post("/log/swish")
+async def log_swish():
+    asyncio.create_task(logger.log_swish_click())
+    return {"ok": True}
+
+
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
