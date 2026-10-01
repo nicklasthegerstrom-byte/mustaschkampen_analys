@@ -60,6 +60,46 @@ const errorMsg = document.getElementById('error-msg');
 const shareMobile = document.getElementById('share-mobile');
 
 let currentCertBlob = null;
+let currentFormat = 'reel'; // 'reel' eller 'post'
+const formatToggle = document.getElementById('format-toggle');
+
+async function switchFormat() {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const targetEndpoint = currentFormat === 'reel' ? '/analyze/post' : '/analyze';
+    const targetFormat = currentFormat === 'reel' ? 'post' : 'reel';
+
+    formatToggle.textContent = 'Laddar...';
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch(targetEndpoint, { method: 'POST', body: formData });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.certificate) return;
+
+        const dataUrl = 'data:image/png;base64,' + data.certificate;
+        resultCert.src = dataUrl;
+
+        try {
+            const byteStr = atob(data.certificate);
+            const ab = new ArrayBuffer(byteStr.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+            currentCertBlob = new Blob([ab], { type: 'image/png' });
+        } catch (_) {}
+
+        currentFormat = targetFormat;
+        formatToggle.textContent = currentFormat === 'reel' ? 'Byt till 4:3-format' : 'Byt till 16:9-format';
+    } catch (_) {
+        formatToggle.textContent = currentFormat === 'reel' ? 'Byt till 4:3-format' : 'Byt till 16:9-format';
+    }
+}
+
+formatToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchFormat();
+});
 
 shareMobile.addEventListener('click', async () => {
     const shareData = { title: 'Min mustaschstyrka', text: 'Kolla min mustaschstyrka!', url: window.location.origin };
@@ -194,10 +234,14 @@ analyzeBtn.addEventListener('click', async () => {
             if (isMobile) {
                 certMobileHint.hidden = false;
                 certDownload.hidden = true;
+                currentFormat = 'reel';
+                formatToggle.textContent = 'Byt till 4:3-format';
+                formatToggle.hidden = false;
             } else {
                 certDownload.href = dataUrl;
                 certDownload.hidden = false;
                 certMobileHint.hidden = true;
+                formatToggle.hidden = true;
             }
         } else {
             resultCert.style.display = 'none';
@@ -205,6 +249,7 @@ analyzeBtn.addEventListener('click', async () => {
             certMobileHint.hidden = true;
             certError.hidden = false;
             shareMobile.hidden = true;
+            formatToggle.hidden = true;
             currentCertBlob = null;
         }
 
