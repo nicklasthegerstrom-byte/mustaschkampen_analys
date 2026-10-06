@@ -211,6 +211,7 @@ analyzeBtn.addEventListener('click', async () => {
         const certDownload = document.getElementById('cert-download');
         const certMobileHint = document.getElementById('cert-mobile-hint');
         const certError = document.getElementById('cert-error');
+        const hashtagHint = document.getElementById('hashtag-hint');
         const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
         if (data.certificate) {
@@ -230,6 +231,7 @@ analyzeBtn.addEventListener('click', async () => {
             }
 
             shareMobile.hidden = !isMobile;
+            hashtagHint.hidden = !isMobile;
 
             if (isMobile) {
                 certMobileHint.hidden = false;
@@ -249,6 +251,7 @@ analyzeBtn.addEventListener('click', async () => {
             certMobileHint.hidden = true;
             certError.hidden = false;
             shareMobile.hidden = true;
+            hashtagHint.hidden = true;
             formatToggle.hidden = true;
             currentCertBlob = null;
         }
