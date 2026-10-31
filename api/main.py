@@ -179,7 +179,7 @@ async def analyze(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents))
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
         image = ImageOps.exif_transpose(image)
     except HTTPException:
         raise
@@ -298,7 +298,7 @@ async def analyze_post(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents))
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
         image = ImageOps.exif_transpose(image)
     except HTTPException:
         raise
