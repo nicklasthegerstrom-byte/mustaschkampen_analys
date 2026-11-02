@@ -170,6 +170,10 @@ main {
     display: none;
 }
 
+#file-label-camera {
+    margin-left: 8px;
+}
+
 .file-name {
     flex: 1;
     font-size: 0.8rem;

@@ -30,9 +30,13 @@
         <div class="card" id="upload-card">
             <p class="upload-intro">Ladda upp en selfie för att analysera din mustaschstyrka</p>
             <div class="upload-row">
-                <label for="file-input" class="file-label">
+                <label for="file-input" class="file-label" id="file-label-gallery">
                     Välj bild
                     <input type="file" id="file-input" accept="image/*">
+                </label>
+                <label for="file-input-camera" class="file-label" id="file-label-camera" hidden>
+                    Ta foto
+                    <input type="file" id="file-input-camera" accept="image/*" capture="environment">
                 </label>
                 <span id="file-name" class="file-name">Ingen fil vald</span>
                 <button class="info-btn" id="info-btn">i</button>

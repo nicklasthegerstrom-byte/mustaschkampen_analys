@@ -64,7 +64,7 @@ let currentFormat = 'reel'; // 'reel' eller 'post'
 const formatToggle = document.getElementById('format-toggle');
 
 async function switchFormat() {
-    const file = fileInput.files[0];
+    const file = getSelectedFile();
     if (!file) return;
     const targetEndpoint = currentFormat === 'reel' ? '/analyze/post' : '/analyze';
     const targetFormat = currentFormat === 'reel' ? 'post' : 'reel';
@@ -122,6 +122,9 @@ function showError(msg = 'Inget ansikte upptäckt') {
 }
 
 const fileInput = document.getElementById('file-input');
+const fileInputCamera = document.getElementById('file-input-camera');
+const fileLabelGallery = document.getElementById('file-label-gallery');
+const fileLabelCamera = document.getElementById('file-label-camera');
 const analyzeBtn = document.getElementById('analyze-btn');
 const resultCard = document.getElementById('result-card');
 const resultVideo = document.getElementById('result-video');
@@ -140,20 +143,33 @@ infoBtn.addEventListener('click', () => {
 
 const uploadCard = document.getElementById('upload-card');
 
-fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (file) {
-        fileName.textContent = file.name;
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
-        analyzeBtn.hidden = false;
-        resultCard.hidden = true;
-        uploadCard.classList.add('expanded');
-    }
-});
+// På Android: visa både "Ta foto" och "Välj från galleri"
+const isAndroid = /Android/i.test(navigator.userAgent);
+if (isAndroid) {
+    fileLabelGallery.querySelector('input').removeAttribute('capture');
+    fileLabelGallery.childNodes[0].textContent = 'Välj från galleri';
+    fileLabelCamera.hidden = false;
+}
+
+function handleFileSelected(file) {
+    if (!file) return;
+    fileName.textContent = file.name;
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    analyzeBtn.hidden = false;
+    resultCard.hidden = true;
+    uploadCard.classList.add('expanded');
+}
+
+fileInput.addEventListener('change', () => handleFileSelected(fileInput.files[0]));
+fileInputCamera.addEventListener('change', () => handleFileSelected(fileInputCamera.files[0]));
+
+function getSelectedFile() {
+    return fileInput.files[0] || fileInputCamera.files[0] || null;
+}
 
 analyzeBtn.addEventListener('click', async () => {
-    const file = fileInput.files[0];
+    const file = getSelectedFile();
     if (!file) return;
 
     analyzeBtn.hidden = true;
