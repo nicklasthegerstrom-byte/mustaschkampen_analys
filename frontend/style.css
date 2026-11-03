@@ -183,6 +183,16 @@ main {
     white-space: nowrap;
 }
 
+.file-name-below {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 6px;
+}
+
 .info-btn {
     width: 22px;
     height: 22px;

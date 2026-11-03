@@ -149,6 +149,12 @@ if (isAndroid) {
     fileLabelGallery.querySelector('input').removeAttribute('capture');
     fileLabelGallery.childNodes[0].textContent = 'Välj från galleri';
     fileLabelCamera.hidden = false;
+
+    // Flytta filnamnet till under knapparna
+    const uploadRow = document.querySelector('.upload-row');
+    fileName.classList.add('file-name-below');
+    fileName.classList.remove('file-name');
+    uploadRow.parentNode.insertBefore(fileName, uploadRow.nextSibling);
 }
 
 function handleFileSelected(file) {
