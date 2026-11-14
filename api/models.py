@@ -79,11 +79,14 @@ def predict(image: Image.Image):
     if img_array is None:
         return None
 
-    mustache_prob = float(mustache_model.predict(img_array, verbose=0)[0][0])
+    # Anropar modellen direkt i stället för .predict(): samma resultat, men
+    # .predict() bygger upp en ny datapipeline varje gång och läcker lite minne.
+    # training=False stänger av dropout och bildförvrängning, precis som predict gör.
+    mustache_prob = float(mustache_model(img_array, training=False).numpy()[0][0])
     if mustache_prob < 0.4:
         return {"mustache": False, "mustache_prob": mustache_prob}
 
-    preds = epic_model.predict(img_array, verbose=0)[0]
+    preds = epic_model(img_array, training=False).numpy()[0]
     p_epic, p_medium, p_medium_thin, p_thin = float(preds[0]), float(preds[1]), float(preds[2]), float(preds[3])
 
     return {
