@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pillow_heif import register_heif_opener
 
-from api.models import predict, is_blocked
+from api.models import predict, is_blocked, MAX_DIM
 from api.scoring import weighted_epic_score, classify_epicness
 from api import logger
 
@@ -172,6 +172,60 @@ def create_share_image(photo, score, title):
     return canvas.convert("RGB")
 
 
+_PAGE_SIZE = os.sysconf("SC_PAGE_SIZE")
+
+
+def _read_mb(path, field=None, unit=1):
+    try:
+        with open(path) as f:
+            text = f.read()
+        value = int(text.split()[field]) if field is not None else int(text)
+        return value * unit // (1024 * 1024)
+    except Exception:
+        return None
+
+
+def _log_mem(step):
+    """Skriver minnesanvändningen till loggen, t.ex.
+    '[MEM] efter predict: process 1312 MB, container 1350 MB'.
+
+    'process' är den här Python-processen. 'container' är hela tjänsten och
+    är samma siffra som Renders minnesgraf. Fungerar bara på Linux (Render);
+    lokalt på Mac skrivs ingenting.
+    """
+    process = _read_mb("/proc/self/statm", field=1, unit=_PAGE_SIZE)
+    if process is None:
+        return
+    container = _read_mb("/sys/fs/cgroup/memory.current")
+    extra = f", container {container} MB" if container is not None else ""
+    print(f"[MEM] {step}: process {process} MB{extra}", flush=True)
+
+
+def _load_image(contents: bytes) -> Image.Image:
+    """Läser in bilden och krymper den direkt till modellernas maxstorlek.
+
+    Modellerna krymper ändå bilden till MAX_DIM innan de tittar på den, så
+    resultatet är pixel för pixel samma som förut. Skillnaden är att
+    fullstorleksbilden släpps här i stället för att ligga kvar i minnet
+    (och kopieras om) genom hela analysen.
+    """
+    image = Image.open(io.BytesIO(contents))
+    original = f"{image.format} {image.size[0]}x{image.size[1]} px, {len(contents) / 1e6:.1f} MB fil"
+    if image.format == "JPEG" and image.mode == "RGB":
+        # Redan RGB: ladda utan extra kopia. load() måste ske före thumbnail(),
+        # annars avkodar Pillow JPEG:en i lägre upplösning och pixlarna ändras.
+        image.load()
+    else:
+        # HEIC m.fl. måste konverteras innan exif_transpose (annars krasch).
+        image = image.convert("RGB")
+    if image.getexif().get(0x0112, 1) != 1:
+        image = ImageOps.exif_transpose(image)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
+    _log_mem(f"inläst {original} -> {image.size[0]}x{image.size[1]}")
+    return image
+
+
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     MAX_SIZE = 20 * 1024 * 1024  # 20 MB
@@ -179,8 +233,7 @@ async def analyze(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-        image = ImageOps.exif_transpose(image)
+        image = _load_image(contents)
     except HTTPException:
         raise
     except Exception as e:
@@ -189,6 +242,7 @@ async def analyze(file: UploadFile = File(...)):
 
     try:
         blocked = is_blocked(image)
+        _log_mem("efter blocklist")
     except Exception as e:
         asyncio.create_task(logger.log_error("blocklist_error", str(e)))
         raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
@@ -198,6 +252,7 @@ async def analyze(file: UploadFile = File(...)):
 
     try:
         result = predict(image)
+        _log_mem("efter predict")
     except Exception as e:
         asyncio.create_task(logger.log_error("predict_error", str(e)))
         raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
@@ -214,6 +269,7 @@ async def analyze(file: UploadFile = File(...)):
                 buf = io.BytesIO()
                 reel_image.save(buf, format="PNG")
                 certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+                _log_mem("efter certifikat")
         except Exception as e:
             asyncio.create_task(logger.log_error("cert_error", str(e)))
         return {
@@ -241,6 +297,7 @@ async def analyze(file: UploadFile = File(...)):
             buf = io.BytesIO()
             reel_image.save(buf, format="PNG")
             certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+            _log_mem("efter certifikat")
     except Exception as e:
         asyncio.create_task(logger.log_error("cert_error", str(e)))
 
@@ -259,6 +316,7 @@ def _run_analysis(image: Image.Image):
     """Gemensam analys-logik för båda endpoints."""
     try:
         blocked = is_blocked(image)
+        _log_mem("efter blocklist")
     except Exception as e:
         asyncio.create_task(logger.log_error("blocklist_error", str(e)))
         raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
@@ -268,6 +326,7 @@ def _run_analysis(image: Image.Image):
 
     try:
         result = predict(image)
+        _log_mem("efter predict")
     except Exception as e:
         asyncio.create_task(logger.log_error("predict_error", str(e)))
         raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
@@ -298,8 +357,7 @@ async def analyze_post(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-        image = ImageOps.exif_transpose(image)
+        image = _load_image(contents)
     except HTTPException:
         raise
     except Exception as e:
@@ -315,6 +373,7 @@ async def analyze_post(file: UploadFile = File(...)):
             buf = io.BytesIO()
             post_image.save(buf, format="PNG")
             certificate_b64 = base64.b64encode(buf.getvalue()).decode()
+            _log_mem("efter certifikat")
     except Exception as e:
         asyncio.create_task(logger.log_error("cert_error", str(e)))
 

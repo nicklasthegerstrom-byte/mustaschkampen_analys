@@ -13,6 +13,10 @@ facenet = InceptionResnetV1(pretrained="vggface2").eval()
 BLOCKLIST_THRESHOLD = 0.65
 BLOCKLIST_ROOT = "assets/blocklist_reference"
 
+# Största sida (px) på bilden som modellerna tittar på.
+# api/main.py krymper till samma mått direkt vid inläsning.
+MAX_DIM = 1200
+
 
 def _load_blocklist_embeddings():
     if not os.path.isdir(BLOCKLIST_ROOT):
@@ -42,8 +46,8 @@ blocklist_embeddings = _load_blocklist_embeddings()
 
 def is_blocked(image: Image.Image):
     image = image.convert("RGB")
-    if max(image.size) > 1200:
-        image.thumbnail((1200, 1200), Image.LANCZOS)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
     face = mtcnn_face(image)
     if face is None or not blocklist_embeddings:
         return False
@@ -61,9 +65,8 @@ epic_model = tf.keras.models.load_model("models/20260911_epic_detector.keras")
 
 def prepare_image(image: Image.Image):
     image = image.convert("RGB")
-    max_dim = 1200
-    if max(image.size) > max_dim:
-        image.thumbnail((max_dim, max_dim), Image.LANCZOS)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
     face = mtcnn(image)
     if face is None:
         return None
@@ -76,11 +79,14 @@ def predict(image: Image.Image):
     if img_array is None:
         return None
 
-    mustache_prob = float(mustache_model.predict(img_array, verbose=0)[0][0])
+    # Anropar modellen direkt i stället för .predict(): samma resultat, men
+    # .predict() bygger upp en ny datapipeline varje gång och läcker lite minne.
+    # training=False stänger av dropout och bildförvrängning, precis som predict gör.
+    mustache_prob = float(mustache_model(img_array, training=False).numpy()[0][0])
     if mustache_prob < 0.4:
         return {"mustache": False, "mustache_prob": mustache_prob}
 
-    preds = epic_model.predict(img_array, verbose=0)[0]
+    preds = epic_model(img_array, training=False).numpy()[0]
     p_epic, p_medium, p_medium_thin, p_thin = float(preds[0]), float(preds[1]), float(preds[2]), float(preds[3])
 
     return {
