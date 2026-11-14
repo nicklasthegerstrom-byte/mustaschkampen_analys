@@ -12,6 +12,9 @@ const LABELS = [
 
 let loadingInterval = null;
 
+// Laddningsstaplarna visas alltid minst så här länge, även om servern svarar snabbare.
+const MIN_LOADING_MS = 2000;
+
 function startLoading() {
     loadingCard.hidden = false;
     let labelIndex = 0;
@@ -180,6 +183,7 @@ analyzeBtn.addEventListener('click', async () => {
 
     analyzeBtn.hidden = true;
     startLoading();
+    const loadingStarted = Date.now();
 
     const formData = new FormData();
     formData.append('file', file);
@@ -188,6 +192,9 @@ analyzeBtn.addEventListener('click', async () => {
         const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
         const endpoint = isMobileDevice ? '/analyze' : '/analyze/post';
         const res = await fetch(endpoint, { method: 'POST', body: formData });
+
+        const remaining = MIN_LOADING_MS - (Date.now() - loadingStarted);
+        if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining));
 
         if (!res.ok) {
             if (res.status === 422) {
