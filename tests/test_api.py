@@ -82,6 +82,15 @@ class TestAnalyzeEndpoint:
         res = upload(client, big)
         assert res.status_code == 413
 
+    def test_large_image_is_shrunk_before_analysis(self, client):
+        with (
+            patch("api.main.is_blocked", return_value=False) as blocked,
+            patch("api.main.predict", return_value=None) as pred,
+        ):
+            upload(client, make_jpeg(size=(4000, 3000)))
+        assert blocked.call_args[0][0].size == (1200, 900)
+        assert pred.call_args[0][0].size == (1200, 900)
+
     def test_invalid_file_returns_400(self, client):
         res = upload(client, b"detta ar inte en bild")
         assert res.status_code == 400

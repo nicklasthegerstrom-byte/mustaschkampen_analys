@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pillow_heif import register_heif_opener
 
-from api.models import predict, is_blocked
+from api.models import predict, is_blocked, MAX_DIM
 from api.scoring import weighted_epic_score, classify_epicness
 from api import logger
 
@@ -172,6 +172,29 @@ def create_share_image(photo, score, title):
     return canvas.convert("RGB")
 
 
+def _load_image(contents: bytes) -> Image.Image:
+    """Läser in bilden och krymper den direkt till modellernas maxstorlek.
+
+    Modellerna krymper ändå bilden till MAX_DIM innan de tittar på den, så
+    resultatet är pixel för pixel samma som förut. Skillnaden är att
+    fullstorleksbilden släpps här i stället för att ligga kvar i minnet
+    (och kopieras om) genom hela analysen.
+    """
+    image = Image.open(io.BytesIO(contents))
+    if image.format == "JPEG" and image.mode == "RGB":
+        # Redan RGB: ladda utan extra kopia. load() måste ske före thumbnail(),
+        # annars avkodar Pillow JPEG:en i lägre upplösning och pixlarna ändras.
+        image.load()
+    else:
+        # HEIC m.fl. måste konverteras innan exif_transpose (annars krasch).
+        image = image.convert("RGB")
+    if image.getexif().get(0x0112, 1) != 1:
+        image = ImageOps.exif_transpose(image)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
+    return image
+
+
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     MAX_SIZE = 20 * 1024 * 1024  # 20 MB
@@ -179,8 +202,7 @@ async def analyze(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-        image = ImageOps.exif_transpose(image)
+        image = _load_image(contents)
     except HTTPException:
         raise
     except Exception as e:
@@ -298,8 +320,7 @@ async def analyze_post(file: UploadFile = File(...)):
         contents = await file.read()
         if len(contents) > MAX_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-        image = ImageOps.exif_transpose(image)
+        image = _load_image(contents)
     except HTTPException:
         raise
     except Exception as e:

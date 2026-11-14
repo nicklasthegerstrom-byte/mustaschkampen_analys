@@ -13,6 +13,10 @@ facenet = InceptionResnetV1(pretrained="vggface2").eval()
 BLOCKLIST_THRESHOLD = 0.65
 BLOCKLIST_ROOT = "assets/blocklist_reference"
 
+# Största sida (px) på bilden som modellerna tittar på.
+# api/main.py krymper till samma mått direkt vid inläsning.
+MAX_DIM = 1200
+
 
 def _load_blocklist_embeddings():
     if not os.path.isdir(BLOCKLIST_ROOT):
@@ -42,8 +46,8 @@ blocklist_embeddings = _load_blocklist_embeddings()
 
 def is_blocked(image: Image.Image):
     image = image.convert("RGB")
-    if max(image.size) > 1200:
-        image.thumbnail((1200, 1200), Image.LANCZOS)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
     face = mtcnn_face(image)
     if face is None or not blocklist_embeddings:
         return False
@@ -61,9 +65,8 @@ epic_model = tf.keras.models.load_model("models/20260911_epic_detector.keras")
 
 def prepare_image(image: Image.Image):
     image = image.convert("RGB")
-    max_dim = 1200
-    if max(image.size) > max_dim:
-        image.thumbnail((max_dim, max_dim), Image.LANCZOS)
+    if max(image.size) > MAX_DIM:
+        image.thumbnail((MAX_DIM, MAX_DIM), Image.LANCZOS)
     face = mtcnn(image)
     if face is None:
         return None
