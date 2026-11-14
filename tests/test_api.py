@@ -111,6 +111,49 @@ class TestAnalyzeEndpoint:
         assert res.json()["score"] == 100
 
 
+class TestLoadImage:
+    """Inläsningen: rotation, krympning och konvertering innan modellerna får bilden."""
+
+    def test_rotated_phone_image_is_turned_upright(self, client):
+        import api.main as main
+        # Liggande bild, röd till vänster och blå till höger, märkt "vrid 90° medurs".
+        img = Image.new("RGB", (400, 200), (255, 0, 0))
+        img.paste((0, 0, 255), (200, 0, 400, 200))
+        exif = Image.Exif()
+        exif[0x0112] = 6
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", exif=exif.tobytes())
+
+        result = main._load_image(buf.getvalue())
+
+        assert result.size == (200, 400)
+        top, bottom = result.getpixel((100, 50)), result.getpixel((100, 350))
+        assert top[0] > 200 and top[2] < 50        # rött överst
+        assert bottom[2] > 200 and bottom[0] < 50  # blått nederst
+
+    def test_small_image_is_not_enlarged(self, client):
+        import api.main as main
+        result = main._load_image(make_jpeg(size=(200, 100)))
+        assert result.size == (200, 100)
+
+    def test_transparent_png_becomes_rgb_and_is_shrunk(self, client):
+        import api.main as main
+        buf = io.BytesIO()
+        Image.new("RGBA", (3000, 1500), (100, 150, 200, 128)).save(buf, format="PNG")
+
+        result = main._load_image(buf.getvalue())
+
+        assert result.mode == "RGB"
+        assert result.size == (1200, 600)
+
+    def test_memory_log_is_silent_when_memory_cannot_be_read(self, client, capsys):
+        import api.main as main
+        assert main._read_mb("/finns/inte") is None
+        with patch("api.main._read_mb", return_value=None):
+            main._log_mem("test")
+        assert capsys.readouterr().out == ""
+
+
 class TestLogSwishEndpoint:
     def test_log_swish_returns_ok(self, client):
         with patch("api.main.logger.log_swish_click"):
