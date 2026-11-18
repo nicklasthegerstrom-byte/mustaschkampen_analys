@@ -154,6 +154,50 @@ class TestLoadImage:
         assert capsys.readouterr().out == ""
 
 
+class TestReleaseMemory:
+    def test_does_nothing_where_malloc_trim_is_missing(self, client):
+        import api.main as main
+        with patch("api.main._malloc_trim", None):
+            main._release_memory()  # får inte krascha (t.ex. på Mac)
+
+    def test_survives_if_malloc_trim_fails(self, client):
+        import api.main as main
+        with patch("api.main._malloc_trim", MagicMock(side_effect=OSError)):
+            main._release_memory()
+
+    def test_runs_after_analysis_and_result_is_unchanged(self, client):
+        trim = MagicMock()
+        with (
+            patch("api.main._malloc_trim", trim),
+            patch("api.main.is_blocked", return_value=False),
+            patch("api.main.predict", return_value={"mustache": False}),
+        ):
+            res = upload(client, make_jpeg())
+        assert res.status_code == 200
+        assert res.json()["score"] == 0
+        trim.assert_called_once_with(0)
+
+    def test_runs_even_when_no_face_is_found(self, client):
+        trim = MagicMock()
+        with (
+            patch("api.main._malloc_trim", trim),
+            patch("api.main.is_blocked", return_value=False),
+            patch("api.main.predict", return_value=None),
+        ):
+            res = upload(client, make_jpeg())
+        assert res.status_code == 422
+        trim.assert_called_once_with(0)
+
+    def test_does_not_run_for_other_pages(self, client):
+        trim = MagicMock()
+        with (
+            patch("api.main._malloc_trim", trim),
+            patch("api.main.logger.log_swish_click"),
+        ):
+            client.post("/log/swish")
+        trim.assert_not_called()
+
+
 class TestLogSwishEndpoint:
     def test_log_swish_returns_ok(self, client):
         with patch("api.main.logger.log_swish_click"):

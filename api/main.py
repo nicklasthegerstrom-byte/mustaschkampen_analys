@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import ctypes
 import io
 import os
 import numpy as np
@@ -199,6 +200,40 @@ def _log_mem(step):
     container = _read_mb("/sys/fs/cgroup/memory.current")
     extra = f", container {container} MB" if container is not None else ""
     print(f"[MEM] {step}: process {process} MB{extra}", flush=True)
+
+
+def _load_malloc_trim():
+    """Hämtar Linux-funktionen malloc_trim, eller None där den inte finns (t.ex. Mac)."""
+    try:
+        return ctypes.CDLL("libc.so.6").malloc_trim
+    except (OSError, AttributeError):
+        return None
+
+
+_malloc_trim = _load_malloc_trim()
+
+
+def _release_memory():
+    """Ber systemet ta tillbaka minne som Python redan har släppt men hållit kvar i reserv.
+
+    Körs först när analysen är klar och svaret är byggt, så den kan inte
+    påverka poängen. Rör bara ledigt minne. Gör ingenting på Mac.
+    """
+    if _malloc_trim is None:
+        return
+    try:
+        _malloc_trim(0)
+    except Exception:
+        return
+    _log_mem("efter frigöring")
+
+
+@app.middleware("http")
+async def release_memory_after_analysis(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/analyze"):
+        _release_memory()
+    return response
 
 
 def _load_image(contents: bytes) -> Image.Image:
