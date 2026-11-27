@@ -1,36 +1,26 @@
 import pytest
-from api.scoring import weighted_epic_score, classify_epicness
+from api.scoring import mustache_score, classify_epicness
 
 
-class TestWeightedEpicScore:
+class TestMustacheScore:
     def test_pure_epic_returns_100(self):
-        assert weighted_epic_score(1.0, 0, 0, 0) == 100.0
-
-    def test_near_epic_threshold(self):
-        # p_epic >= 0.99 → 100
-        assert weighted_epic_score(0.99, 0, 0, 0) == 100.0
-        assert weighted_epic_score(0.98, 0, 0, 0) < 100.0
-
-    def test_pure_thin_low_score(self):
-        score = weighted_epic_score(0, 0, 0, 1.0)
-        assert 0 <= score <= 20
+        assert mustache_score(1.0, 0, 0, 0) == 100.0
 
     def test_pure_medium(self):
-        score = weighted_epic_score(0, 1.0, 0, 0)
-        assert score == pytest.approx(80.0)
+        assert mustache_score(0, 1.0, 0, 0) == pytest.approx(85.0)
 
     def test_pure_medium_thin(self):
-        score = weighted_epic_score(0, 0, 1.0, 0)
-        assert score == pytest.approx(50.0)
+        assert mustache_score(0, 0, 1.0, 0) == pytest.approx(50.0)
+
+    def test_pure_thin(self):
+        assert mustache_score(0, 0, 0, 1.0) == pytest.approx(10.0)
 
     def test_score_clipped_to_0_100(self):
-        score = weighted_epic_score(0, 0, 0, 0)
-        assert score == 0.0
-        score = weighted_epic_score(1.0, 1.0, 1.0, 1.0)
-        assert score == 100.0
+        assert mustache_score(0, 0, 0, 0) == 0.0
+        assert mustache_score(1.0, 1.0, 1.0, 1.0) == 100.0
 
     def test_mixed_probabilities(self):
-        score = weighted_epic_score(0.5, 0.3, 0.1, 0.1)
+        score = mustache_score(0.5, 0.3, 0.1, 0.1)
         assert 0 <= score <= 100
 
 

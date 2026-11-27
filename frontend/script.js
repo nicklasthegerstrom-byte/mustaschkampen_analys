@@ -1,3 +1,7 @@
+// Tävlingen stänger 30 november kl. 23.59 svensk tid; därefter döljs tävlingstexterna.
+const TAVLING_SLUT = Date.parse('2026-12-01T00:00:00+01:00');
+if (Date.now() >= TAVLING_SLUT) document.body.classList.add('tavling-slut');
+
 const loadingCard = document.getElementById('loading-card');
 const loadingLabel = document.getElementById('loading-label');
 const bar1 = document.getElementById('bar1');
@@ -63,40 +67,33 @@ const errorMsg = document.getElementById('error-msg');
 const shareMobile = document.getElementById('share-mobile');
 
 let currentCertBlob = null;
-let currentFormat = 'reel'; // 'reel' eller 'post'
+let currentFormat = 'reel'; // 'reel' (9:16) eller 'post' (4:5)
+let certificates = { reel: null, post: null }; // base64-PNG per format
 const formatToggle = document.getElementById('format-toggle');
 
-async function switchFormat() {
-    const file = getSelectedFile();
-    if (!file) return;
-    const targetEndpoint = currentFormat === 'reel' ? '/analyze/post' : '/analyze';
-    const targetFormat = currentFormat === 'reel' ? 'post' : 'reel';
+function formatToggleLabel() {
+    return currentFormat === 'reel' ? 'Byt till 4:5-format' : 'Byt till 9:16-format';
+}
 
-    formatToggle.textContent = 'Laddar...';
-    const formData = new FormData();
-    formData.append('file', file);
+function showCertificate(b64) {
+    resultCert.src = 'data:image/png;base64,' + b64;
     try {
-        const res = await fetch(targetEndpoint, { method: 'POST', body: formData });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data.certificate) return;
-
-        const dataUrl = 'data:image/png;base64,' + data.certificate;
-        resultCert.src = dataUrl;
-
-        try {
-            const byteStr = atob(data.certificate);
-            const ab = new ArrayBuffer(byteStr.length);
-            const ia = new Uint8Array(ab);
-            for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-            currentCertBlob = new Blob([ab], { type: 'image/png' });
-        } catch (_) {}
-
-        currentFormat = targetFormat;
-        formatToggle.textContent = currentFormat === 'reel' ? 'Byt till 4:3-format' : 'Byt till 16:9-format';
+        const byteStr = atob(b64);
+        const ia = new Uint8Array(byteStr.length);
+        for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+        currentCertBlob = new Blob([ia], { type: 'image/png' });
     } catch (_) {
-        formatToggle.textContent = currentFormat === 'reel' ? 'Byt till 4:3-format' : 'Byt till 16:9-format';
+        currentCertBlob = null;
     }
+}
+
+// Båda formaten kommer redan i analyssvaret, så bytet sker direkt utan nytt anrop.
+function switchFormat() {
+    const targetFormat = currentFormat === 'reel' ? 'post' : 'reel';
+    if (!certificates[targetFormat]) return;
+    currentFormat = targetFormat;
+    showCertificate(certificates[currentFormat]);
+    formatToggle.textContent = formatToggleLabel();
 }
 
 formatToggle.addEventListener('click', (e) => {
@@ -221,7 +218,7 @@ analyzeBtn.addEventListener('click', async () => {
             'respektabel': '/assets/abbe/video/respektabel.mp4',
             'lovande':     '/assets/abbe/video/lovande.mp4',
             'fjunig':      '/assets/abbe/video/fjunig.mp4',
-            'ingen':       '/assets/abbe/video/ingen.mp4',
+            'mustaschlös': '/assets/abbe/video/ingen.mp4',
         };
         const titleLower = data.title.toLowerCase();
         const videoSrc = Object.entries(VIDEO_MAP).find(([key]) => titleLower.includes(key))?.[1];
@@ -245,19 +242,9 @@ analyzeBtn.addEventListener('click', async () => {
 
         if (data.certificate) {
             certError.hidden = true;
-            const dataUrl = 'data:image/png;base64,' + data.certificate;
-            resultCert.src = dataUrl;
+            certificates = { reel: null, post: null };
+            showCertificate(data.certificate);
             resultCert.style.display = 'block';
-
-            try {
-                const byteStr = atob(data.certificate);
-                const ab = new ArrayBuffer(byteStr.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-                currentCertBlob = new Blob([ab], { type: 'image/png' });
-            } catch (_) {
-                currentCertBlob = null;
-            }
 
             shareMobile.hidden = !isMobile;
             hashtagHint.hidden = !isMobile;
@@ -266,10 +253,11 @@ analyzeBtn.addEventListener('click', async () => {
                 certMobileHint.hidden = false;
                 certDownload.hidden = true;
                 currentFormat = 'reel';
-                formatToggle.textContent = 'Byt till 4:3-format';
-                formatToggle.hidden = false;
+                certificates = { reel: data.certificate, post: data.certificate_post || null };
+                formatToggle.textContent = formatToggleLabel();
+                formatToggle.hidden = !certificates.post;
             } else {
-                certDownload.href = dataUrl;
+                certDownload.href = resultCert.src;
                 certDownload.hidden = false;
                 certMobileHint.hidden = true;
                 formatToggle.hidden = true;

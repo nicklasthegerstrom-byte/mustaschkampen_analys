@@ -389,30 +389,13 @@ main {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
-    color: #1a1a1a;
+    color: #1b46b4;
     text-align: center;
     margin-top: 8px;
 }
 
 @media (max-width: 600px) {
     .swish-nummer { display: none; }
-}
-
-.swisha {
-    font-size: 0.85rem;
-    color: #000;
-    text-align: center;
-    line-height: 1.6;
-    margin-bottom: 24px;
-}
-
-.swisha .swisha-rubrik {
-    display: block;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #1a1a1a;
-    margin-bottom: 4px;
 }
 
 .share-all-btn {
@@ -494,3 +477,71 @@ main {
     margin-top: 2px;
     margin-bottom: -8px;
 }
+
+/* Tävling (döljs automatiskt efter 30 november, se script.js) */
+/* Egen familj för tävlingstexterna: Gotham Medium som brödtext, Gotham Bold för priset. */
+@font-face {
+    font-family: 'Gotham Tavling';
+    src: url('/assets/fonts/Gotham Medium.otf') format('opentype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Gotham Tavling';
+    src: url('/assets/fonts/Gotham Bold.otf') format('opentype');
+    font-weight: 700;
+}
+
+.tavling-teaser {
+    display: block;
+    background: #fff;
+    color: #1b46b4;
+    font-family: 'Gotham Tavling', sans-serif;
+    font-weight: 400;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    width: 100%;
+    padding: 12px 16px;
+}
+
+.tavling-text {
+    font-family: 'Gotham Tavling', sans-serif;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.tavling strong {
+    font-weight: 700;
+}
+
+.tavling-text strong {
+    color: #1b46b4;
+}
+
+.tavling-dragning {
+    font-size: 0.75rem;
+    color: #333;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Hopp-mål för teasern; syns på både mobil och desktop men tar ingen plats. */
+.tavling-ankare {
+    display: block;
+    height: 0;
+    margin-bottom: -16px; /* tar bort mains gap */
+}
+
+.tavling-mobil { display: none; }
+
+@media (max-width: 600px) {
+    .tavling-mobil { display: block; }
+    .tavling-desktop { display: none; }
+}
+
+.tavling-slut .tavling { display: none !important; }
