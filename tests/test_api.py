@@ -77,6 +77,41 @@ class TestAnalyzeEndpoint:
         assert isinstance(data["title"], str)
         assert isinstance(data["description"], str)
 
+    def test_analyze_returns_both_certificate_formats(self, client):
+        # Mobilen byter format lokalt, så /analyze ska skicka med både reel och post.
+        with (
+            patch("api.main.is_blocked", return_value=False),
+            patch("api.main.predict", return_value={
+                "mustache": True, "p_epic": 0.8, "p_medium": 0.1,
+                "p_medium_thin": 0.05, "p_thin": 0.05,
+            }),
+        ):
+            data = upload(client, make_jpeg()).json()
+        assert data["certificate"]
+        assert data["certificate_post"]
+        assert data["certificate"] != data["certificate_post"]
+
+    def test_no_mustache_also_gets_both_certificates(self, client):
+        with (
+            patch("api.main.is_blocked", return_value=False),
+            patch("api.main.predict", return_value={"mustache": False}),
+        ):
+            data = upload(client, make_jpeg()).json()
+        assert data["certificate"]
+        assert data["certificate_post"]
+
+    def test_analyze_post_returns_only_post_certificate(self, client):
+        with (
+            patch("api.main.is_blocked", return_value=False),
+            patch("api.main.predict", return_value={"mustache": False}),
+        ):
+            data = client.post(
+                "/analyze/post",
+                files={"file": ("test.jpg", make_jpeg(), "image/jpeg")},
+            ).json()
+        assert data["certificate"]
+        assert "certificate_post" not in data
+
     def test_file_too_large_returns_413(self, client):
         big = b"x" * (21 * 1024 * 1024)
         res = upload(client, big)

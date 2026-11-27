@@ -1,11 +1,10 @@
 import numpy as np
 
 
-def weighted_epic_score(p_epic, p_medium, p_medium_thin, p_thin):
-    if p_epic >= 0.99:
-        return 100.0
+def mustache_score(p_epic, p_medium, p_medium_thin, p_thin):
+    """Mustaschpoäng 0-100 utifrån epic-modellens fyra klassannolikheter."""
     thin_score = 10 + (1 - p_thin) * 10
-    score = p_epic * 95 + p_medium * 80 + p_medium_thin * 50 + p_thin * thin_score
+    score = p_epic * 100 + p_medium * 85 + p_medium_thin * 50 + p_thin * thin_score
     return float(np.clip(score, 0, 100))
 
 

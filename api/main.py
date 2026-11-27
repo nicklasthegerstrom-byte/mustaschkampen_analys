@@ -3,7 +3,6 @@ import base64
 import ctypes
 import io
 import os
-import numpy as np
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +10,7 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pillow_heif import register_heif_opener
 
 from api.models import predict, is_blocked, MAX_DIM
-from api.scoring import weighted_epic_score, classify_epicness
+from api.scoring import mustache_score, classify_epicness
 from api import logger
 
 register_heif_opener()
@@ -261,90 +260,20 @@ def _load_image(contents: bytes) -> Image.Image:
     return image
 
 
-@app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
-    MAX_SIZE = 20 * 1024 * 1024  # 20 MB
+MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB
+
+
+async def _read_upload(file: UploadFile) -> Image.Image:
     try:
         contents = await file.read()
-        if len(contents) > MAX_SIZE:
+        if len(contents) > MAX_UPLOAD_SIZE:
             raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = _load_image(contents)
+        return _load_image(contents)
     except HTTPException:
         raise
     except Exception as e:
         asyncio.create_task(logger.log_error("upload_error", str(e)))
         raise HTTPException(status_code=400, detail="Kunde inte läsa bilden.")
-
-    try:
-        blocked = is_blocked(image)
-        _log_mem("efter blocklist")
-    except Exception as e:
-        asyncio.create_task(logger.log_error("blocklist_error", str(e)))
-        raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
-    if blocked:
-        asyncio.create_task(logger.log_error("blocked", "Blocklistat ansikte"))
-        raise HTTPException(status_code=403, detail="Den här bilden kan inte analyseras.")
-
-    try:
-        result = predict(image)
-        _log_mem("efter predict")
-    except Exception as e:
-        asyncio.create_task(logger.log_error("predict_error", str(e)))
-        raise HTTPException(status_code=500, detail="Analysen misslyckades, försök igen.")
-
-    if result is None:
-        asyncio.create_task(logger.log_error("no_face", "Inget ansikte hittades"))
-        raise HTTPException(status_code=422, detail="Inget ansikte hittades.")
-
-    if not result["mustache"]:
-        certificate_b64 = None
-        try:
-            reel_image = create_reel_image(image, 0, "Mustaschlös")
-            if reel_image is not None:
-                buf = io.BytesIO()
-                reel_image.save(buf, format="PNG")
-                certificate_b64 = base64.b64encode(buf.getvalue()).decode()
-                _log_mem("efter certifikat")
-        except Exception as e:
-            asyncio.create_task(logger.log_error("cert_error", str(e)))
-        return {
-            "score": 0,
-            "title": "🚫 Mustaschlös",
-            "description": "Överläppen verkar för närvarande sakna tillräcklig auktoritet.",
-            "mustache": False,
-            "certificate": certificate_b64,
-        }
-
-    p_epic        = result["p_epic"]
-    p_medium      = result["p_medium"]
-    p_medium_thin = result["p_medium_thin"]
-    p_thin        = result["p_thin"]
-
-    score = p_epic * 100 + p_medium * 85 + p_medium_thin * 50 + p_thin * (10 + (1 - p_thin) * 10)
-    score = float(np.clip(score, 0, 100))
-
-    title, description, _ = classify_epicness(score)
-
-    certificate_b64 = None
-    try:
-        reel_image = create_reel_image(image, score, title)
-        if reel_image is not None:
-            buf = io.BytesIO()
-            reel_image.save(buf, format="PNG")
-            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
-            _log_mem("efter certifikat")
-    except Exception as e:
-        asyncio.create_task(logger.log_error("cert_error", str(e)))
-
-    asyncio.create_task(logger.log_analysis(score))
-
-    return {
-        "score": round(score),
-        "title": title,
-        "description": description,
-        "mustache": True,
-        "certificate": certificate_b64,
-    }
 
 
 def _run_analysis(image: Image.Image):
@@ -374,47 +303,48 @@ def _run_analysis(image: Image.Image):
         return {"mustache": False, "score": 0, "title": "🚫 Mustaschlös",
                 "description": "Överläppen verkar för närvarande sakna tillräcklig auktoritet."}
 
-    p_epic        = result["p_epic"]
-    p_medium      = result["p_medium"]
-    p_medium_thin = result["p_medium_thin"]
-    p_thin        = result["p_thin"]
-
-    score = p_epic * 100 + p_medium * 85 + p_medium_thin * 50 + p_thin * (10 + (1 - p_thin) * 10)
-    score = float(np.clip(score, 0, 100))
+    score = mustache_score(result["p_epic"], result["p_medium"],
+                           result["p_medium_thin"], result["p_thin"])
     title, description, _ = classify_epicness(score)
     return {"mustache": True, "score": round(score), "title": title, "description": description}
 
 
-@app.post("/analyze/post")
-async def analyze_post(file: UploadFile = File(...)):
-    MAX_SIZE = 20 * 1024 * 1024
+def _make_certificate(create_fn, image, data):
+    """Ritar ett certifikat och returnerar det som base64-PNG, eller None vid fel."""
     try:
-        contents = await file.read()
-        if len(contents) > MAX_SIZE:
-            raise HTTPException(status_code=413, detail="Bilden är för stor (max 20 MB).")
-        image = _load_image(contents)
-    except HTTPException:
-        raise
-    except Exception as e:
-        asyncio.create_task(logger.log_error("upload_error", str(e)))
-        raise HTTPException(status_code=400, detail="Kunde inte läsa bilden.")
-
-    data = _run_analysis(image)
-
-    certificate_b64 = None
-    try:
-        post_image = create_post_image(image, data["score"], data["title"])
-        if post_image is not None:
-            buf = io.BytesIO()
-            post_image.save(buf, format="PNG")
-            certificate_b64 = base64.b64encode(buf.getvalue()).decode()
-            _log_mem("efter certifikat")
+        cert = create_fn(image, data["score"], data["title"])
+        if cert is None:
+            return None
+        buf = io.BytesIO()
+        cert.save(buf, format="PNG")
+        _log_mem("efter certifikat")
+        return base64.b64encode(buf.getvalue()).decode()
     except Exception as e:
         asyncio.create_task(logger.log_error("cert_error", str(e)))
+        return None
 
+
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...)):
+    """Mobil. Ger både reel- (9:16) och post-certifikat (4:5), så att
+    formatbytet i frontend inte behöver köra hela analysen en gång till."""
+    image = await _read_upload(file)
+    data = _run_analysis(image)
+    certificate = _make_certificate(create_reel_image, image, data)
+    certificate_post = _make_certificate(create_post_image, image, data)
+    if data["mustache"]:
+        asyncio.create_task(logger.log_analysis(data["score"]))
+    return {**data, "certificate": certificate, "certificate_post": certificate_post}
+
+
+@app.post("/analyze/post")
+async def analyze_post(file: UploadFile = File(...)):
+    """Desktop. Ger bara post-certifikatet (4:5)."""
+    image = await _read_upload(file)
+    data = _run_analysis(image)
+    certificate = _make_certificate(create_post_image, image, data)
     asyncio.create_task(logger.log_analysis(data["score"]))
-
-    return {**data, "certificate": certificate_b64}
+    return {**data, "certificate": certificate}
 
 
 @app.post("/log/swish")
