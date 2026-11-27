@@ -16,7 +16,7 @@
     <meta name="twitter:description" content="Ladda upp en selfie och få ditt mustaschbetyg av AI. Stöd kampen mot prostatacancer.">
     <meta name="twitter:image" content="https://analys.mustaschkampen.se/assets/images/logo1.png">
     <meta name="google-site-verification" content="jvSWf-8DT7jlSC6fXl1IuOa0zqQRXAwFkPQKCnwls5A" />
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="icon" href="/assets/images/favicon.png" type="image/png">
 </head>
 <body>
@@ -26,6 +26,8 @@
     </a>
     <main>
         <img src="/assets/images/logo1.png" alt="Mustaschkampen" class="logo">
+
+        <a href="#tavling" class="tavling-teaser tavling">🏆 Tävling! Swisha ditt bidrag nedan och få chans att vinna en natt i <strong>Blå rummet på Clarion Hotel Amaranten</strong>.</a>
 
         <div class="card" id="upload-card">
             <p class="upload-intro">Ladda upp en selfie för att analysera din mustaschstyrka</p>
@@ -93,11 +95,14 @@
             <p id="hashtag-hint" class="cert-hint" hidden>Tagga #mustaschkampen</p>
         </div>
 
+        <span id="tavling" class="tavling-ankare"></span>
         <img src="/assets/images/swish_desktop.png" alt="Swish" class="swish-logo swish-desktop">
-        <p class="swish-nummer">Swisha 30 kr till 900 10 17</p>
+        <p class="swish-nummer">Swisha valfritt belopp till 900 10 17 och skriv "Mustaschanalys" i meddelanderaden</p>
         <img src="/assets/images/swish.png" alt="Swish" class="swish-logo swish-mobile">
-        <a href="https://app.swish.nu/1/p/sw/?sw=9001017&msg=Mustaschanalys&edit=amt,msg" class="btn swish-btn" onclick="fetch('/log/swish',{method:'POST'})">Swisha 30 kr</a>
-        <p class="swisha">Tänk på de 30 män som drabbas varje dag.<br>Varje krona gör skillnad!</p>
+        <p class="tavling tavling-text tavling-mobil">Swisha valfritt belopp genom att trycka på knappen nedan senast den 30 november kl. 23.59 och få chansen att vinna en övernattning i <strong>Blå rummet på Clarion Hotel Amaranten</strong> i Stockholm!</p>
+        <p class="tavling tavling-text tavling-desktop">Gör det senast den 30 november kl. 23.59 och få chansen att vinna en övernattning i <strong>Blå rummet på Clarion Hotel Amaranten</strong> i Stockholm!</p>
+        <a href="https://app.swish.nu/1/p/sw/?sw=9001017&msg=Mustaschanalys&edit=amt,msg" class="btn swish-btn" onclick="fetch('/log/swish',{method:'POST'})">Swisha</a>
+        <p class="tavling tavling-dragning">Vinnaren dras den 2 december och kontaktas via SMS till det mobilnummer som användes vid Swishbetalningen.</p>
         <img src="/assets/images/pcf.png" alt="PCF" class="konto-logo">
         <img src="/assets/images/90_Konto_Logo.png" alt="90-konto" class="konto-logo">
         <a href="https://mustaschkampen.se" class="back-link back-link-bottom">

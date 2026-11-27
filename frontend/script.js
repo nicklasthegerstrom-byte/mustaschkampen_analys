@@ -1,3 +1,7 @@
+// Tävlingen stänger 30 november kl. 23.59 svensk tid; därefter döljs tävlingstexterna.
+const TAVLING_SLUT = Date.parse('2026-12-01T00:00:00+01:00');
+if (Date.now() >= TAVLING_SLUT) document.body.classList.add('tavling-slut');
+
 const loadingCard = document.getElementById('loading-card');
 const loadingLabel = document.getElementById('loading-label');
 const bar1 = document.getElementById('bar1');
