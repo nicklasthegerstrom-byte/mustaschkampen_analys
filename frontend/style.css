@@ -389,7 +389,7 @@ main {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
-    color: #1a1a1a;
+    color: #1b46b4;
     text-align: center;
     margin-top: 8px;
 }
@@ -479,12 +479,25 @@ main {
 }
 
 /* Tävling (döljs automatiskt efter 30 november, se script.js) */
+/* Egen familj för tävlingstexterna: Gotham Medium som brödtext, Gotham Bold för priset. */
+@font-face {
+    font-family: 'Gotham Tavling';
+    src: url('/assets/fonts/Gotham Medium.otf') format('opentype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'Gotham Tavling';
+    src: url('/assets/fonts/Gotham Bold.otf') format('opentype');
+    font-weight: 700;
+}
+
 .tavling-teaser {
     display: block;
     background: #fff;
     color: #1b46b4;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
+    font-family: 'Gotham Tavling', sans-serif;
+    font-weight: 400;
     font-size: 0.85rem;
     line-height: 1.4;
     text-align: center;
@@ -494,12 +507,20 @@ main {
 }
 
 .tavling-text {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
+    font-family: 'Gotham Tavling', sans-serif;
+    font-weight: 400;
     font-size: 0.9rem;
     color: #1a1a1a;
     text-align: center;
     line-height: 1.5;
+}
+
+.tavling strong {
+    font-weight: 700;
+}
+
+.tavling-text strong {
+    color: #1b46b4;
 }
 
 .tavling-dragning {
